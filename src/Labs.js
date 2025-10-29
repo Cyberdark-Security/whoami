@@ -1,66 +1,46 @@
-import React, { useState } from "react";
-import ModalEnviarEvidencia from "./ModalEnviarEvidencia";
-export default function Labs({ labs, user, setUser, onOpenAuthModal }) {
-  const [modalLab, setModalLab] = useState(null);
+import React, { useEffect, useState } from "react";
 
-  const handleEnviarEvidencia = (labId, nombre, url) => {
-    alert("Tu evidencia fue enviada, el admin la validará.");
-    setModalLab(null);
-  };
+export default function Labs() {
+  const [labs, setLabs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/labs")
+      .then(res => res.json())
+      .then(data => { setLabs(data.labs || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ color: "#39ff14" }}>Cargando laboratorios...</div>;
 
   return (
-    <div>
-      <h1 style={{color:"#44FF44", fontWeight: 700, fontSize: 32, marginBottom: 16}}>Laboratorios Dockerizados de Pentesting</h1>
-      {labs.map(lab => (
-        <div key={lab.id} style={{
-          background: "#23272F",
-          color: "#e0e0e0",
-          padding: 20,
-          marginBottom: 20,
-          borderRadius: 8,
-          borderLeft: "5px solid #44FF44",
-          boxShadow: "0 2px 16px #0CE0FF20",
-        }}>
-          <h3 style={{ color: "#24D05A" }}>{lab.title}</h3>
-          <a
-            href={lab.megaLink}
-            style={{
-              color: "#0CE0FF", fontWeight: 600, textDecoration: "underline"
-            }}
-            download
-            target="_blank"
-            rel="noopener"
-            onClick={e => {
-              if (!user) {
-                e.preventDefault();
-                onOpenAuthModal("login");
-              }
-            }}
-          >
-            Descargar
-          </a>
-          <button
-            style={{
-              background: "#24D05A",
-              color: "#181A20",
-              marginLeft: 10,
-              fontWeight: 700,
-              borderRadius: 3,
-              padding: "5px 12px",
-              border: "none"
-            }}
-            onClick={() => user ? setModalLab(lab) : onOpenAuthModal("login")}
-          >
-            Enviar evidencia
-          </button>
-        </div>
-      ))}
-      {modalLab && <ModalEnviarEvidencia
-        lab={modalLab}
-        user={user}
-        onSend={handleEnviarEvidencia}
-        onCancel={() => setModalLab(null)}
-      />}
-    </div>
+    <main style={{
+      maxWidth: 900,
+      margin: "3rem auto",
+      background: "#18191b",
+      border: "1px solid #39ff14",
+      borderRadius: "10px",
+      padding: "2em"
+    }}>
+      <h2 style={{ color: "#39ff14" }}>Laboratorios</h2>
+      {labs.length === 0 && <p style={{ color: "#fbd" }}>No hay laboratorios publicados.</p>}
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {labs.map(l => (
+          <li key={l.id} style={{
+            background: "#23272f",
+            borderRadius: "6px",
+            marginBottom: "14px",
+            padding: "12px 20px",
+            color: "#fff"
+          }}>
+            <div style={{ fontSize: "1.2em", color: "#0ff", fontWeight: "bold" }}>{l.title}</div>
+            <div style={{ color: "#aed", fontSize: "1em" }}>{l.description}</div>
+            <div style={{ fontSize: "0.85em", color: "#aaa", marginTop: 2 }}>
+              Publicado: {new Date(l.created_at).toLocaleDateString()}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }
