@@ -1,3 +1,77 @@
+body, #root {
+  background: #181A20;
+  color: #F4F4F4;
+  min-height: 100vh;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  background: inherit;
+  color: inherit;
+  font-family: inherit;
+}
+
+nav, .navbar {
+  background: #181A20;
+  border-bottom: 2px solid #24D05A;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+}
+
+nav a, .navbar a {
+  color: #0CE0FF;
+  font-family: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 1.07rem;
+  margin-right: 22px;
+  letter-spacing: 1px;
+  transition: color .18s;
+}
+nav a:hover, .navbar a:hover {
+  color: #24D05A;
+}
+
+h1, h2, h3, .cyber-title, .lab-banner-title {
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  color: #44FF44;
+  font-weight: bold;
+  margin: 24px 0 18px;
+  letter-spacing: 1.3px;
+}
+
+/* LAB banners estilo tarjetas oscuras */
+.lab-banner {
+  background: #23272F;
+  border-left: 6px solid #44FF44;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #062c1712;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  color: #44FF44;
+  margin: 18px auto;
+  padding: 30px;
+}
+.lab-banner a,
+.lab-banner button {
+  background: #44FF44;
+  color: #191b1f;
+  border-radius: 4px;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-weight: bold;
+  padding: 8px 10px;
+  border: none;
+  box-shadow: 0 2px 8px #0CE0FF22;
+  margin-right: 6px;
+  text-decoration: none;
+}
+.lab-banner a:hover,
+.lab-banner button:hover {
+  background: #24D05A;
+  color: #0CE0FF;
+}
+
+/* Formularios: fondo oscuro, borde verde, letras verdes/cyan */
 .cyber-form {
   max-width: 600px;
   margin: 44px auto 0 auto;
@@ -43,7 +117,6 @@
   padding: 8px 10px;
   margin-bottom: 2px;
 }
-
 .cyber-input:focus {
   border-color: #24D05A;
 }
@@ -62,22 +135,28 @@
   box-shadow: 0 2px 8px #0CE0FF22;
   transition: background .2s, color .2s;
 }
-
 .cyber-btn:hover {
   background: #24D05A;
   color: #0CE0FF;
 }
-
 .cyber-error {
   color: #ff3366;
   font-family: 'Fira Mono', monospace;
   font-weight: 600;
   margin: 8px 0 0 2px;
 }
-
 .cyber-success {
   color: #24D05A;
   font-family: 'Fira Mono', monospace;
   font-weight: 600;
   margin: 8px 0 0 2px;
+}
+
+/* Footer */
+footer {
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  color: #0CE0FF;
+  font-size: 1.15rem;
+  text-align: center;
+  margin-top: 38px;
 }
