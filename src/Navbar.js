@@ -1,11 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Navbar({ user, setUser }) {
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-  };
+// Verifica si el token está en localStorage
+function isAdminLogged() {
+  const token = localStorage.getItem("token");
+  return !!token;
+}
+
+export default function Navbar() {
+  const navigate = useNavigate();
+
+  function logoutAdmin() {
+    localStorage.removeItem("token");
+    navigate("/admin/login");
+    window.location.reload(); // Refresca la UI
+  }
 
   return (
     <nav style={{
@@ -29,21 +38,14 @@ export default function Navbar({ user, setUser }) {
         <Link to="/ranking" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Ranking</Link>
         <Link to="/writeups" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Writeups</Link>
         <Link to="/contacto" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Contacto</Link>
-
-        {!user && (
+        {isAdminLogged() && (
           <>
-            <Link to="/login" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Iniciar sesión</Link>
-            <Link to="/registro" style={{ color: "#0CE0FF", fontWeight: 700, textDecoration: "none" }}>Registrarse</Link>
+            <Link to="/admin/panel" style={{ color: "#24D05A", fontWeight: 700, marginRight: 14, textDecoration: "none" }}>Panel Admin</Link>
+            <button onClick={logoutAdmin} style={{ color: "#F44336", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>Cerrar admin</button>
           </>
         )}
-
-        {user && (
-          <span style={{ color: "#24D05A", fontWeight: 700, marginLeft: 16 }}>
-            Bienvenido, {user.nombre}
-            <button onClick={logout} style={{ marginLeft: 12, cursor: "pointer", fontWeight: 700, background: "none", border: "none", color: "#24D05A" }}>
-              (Cerrar sesión)
-            </button>
-          </span>
+        {!isAdminLogged() && (
+          <Link to="/admin/login" style={{ color: "#0CE0FF", fontWeight: 700, textDecoration: "none" }}>Login Admin</Link>
         )}
       </div>
     </nav>

@@ -4,32 +4,47 @@ import Navbar from "./Navbar";
 import Login from "./Login";
 import Registro from "./Registro";
 import Home from "./Home";
+import Ranking from "./Ranking";
+import Labs from "./Labs";
+import AdminWriteups from "./AdminWriteups";
+import AdminLogin from "./AdminLogin";
+
+function isAdminLogged() {
+  // Solo verifica la existencia y validez mínima del token
+  const token = localStorage.getItem("token");
+  return !!token;
+}
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [forceUpdate, setForceUpdate] = useState(0);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-
-  useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user));
-    else localStorage.removeItem("user");
-  }, [user]);
+  // Para refrescar UI tras login/logout admin
+  function handleAdminLogin() {
+    setForceUpdate(forceUpdate + 1);
+  }
 
   return (
     <BrowserRouter>
-      <Navbar user={user} setUser={setUser} />
+      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/ranking" element={<Ranking />} />
+        <Route path="/labs" element={<Labs />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
         <Route
-          path="/login"
-          element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />}
+          path="/admin/login"
+          element={<AdminLogin onLogin={handleAdminLogin} />}
         />
         <Route
-          path="/registro"
-          element={!user ? <Registro setUser={setUser} /> : <Navigate to="/" />}
+          path="/admin/panel"
+          element={
+            isAdminLogged() ? (
+              <AdminWriteups />
+            ) : (
+              <Navigate to="/admin/login" replace />
+            )
+          }
         />
       </Routes>
     </BrowserRouter>
