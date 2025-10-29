@@ -5,7 +5,6 @@ export default function Labs({ user }) {
   const [labs, setLabs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Función para recargar laboratorios después de agregar uno nuevo
   const recargarLaboratorios = () => {
     setLoading(true);
     fetch("/api/labs")
@@ -25,16 +24,35 @@ export default function Labs({ user }) {
 
   return (
     <main style={{
+      width: "100%",
       maxWidth: 900,
       margin: "3rem auto",
       background: "#18191b",
       border: "1px solid #39ff14",
       borderRadius: "10px",
-      padding: "2em"
+      padding: "2em",
+      boxSizing: "border-box",
+      overflowX: "auto"
     }}>
       <h2 style={{ color: "#39ff14" }}>Laboratorios</h2>
 
-      {/* Solo mostrar formulario a usuarios con rol admin */}
+      {/* Enlace visible para admins */}
+      {user && user.role === "admin" && (
+        <div style={{ marginBottom: 18 }}>
+          <a
+            href="/admin/panel"
+            style={{
+              color: "#39ff14",
+              fontWeight: "bold",
+              textDecoration: "underline",
+              fontSize: "1.1em"
+            }}
+          >
+            Ir al Panel de Administración
+          </a>
+        </div>
+      )}
+
       {user && user.role === "admin" && (
         <AgregarLaboratorio onLabAdded={recargarLaboratorios} />
       )}
