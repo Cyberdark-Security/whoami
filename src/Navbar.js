@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const navLink = {
   color: "#0CE0FF",
@@ -9,7 +10,6 @@ const navLink = {
   padding: "4px 0",
   transition: "color 0.2s"
 };
-
 const navButton = {
   background: "linear-gradient(90deg, #24D05A 60%, #0CE0FF 100%)",
   color: "#181A20",
@@ -53,10 +53,10 @@ export default function Navbar({ user, setUser, onOpenAuthModal }) {
         WHOAMI
       </span>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <a href="#" style={navLink}>Laboratorios</a>
-        <a href="#" style={navLink}>Ranking</a>
-        <a href="#" style={navLink}>Writeups</a>
-        <a href="#" style={navLink}>Contacto</a>
+        <Link to="/" style={navLink}>Laboratorios</Link>
+        <Link to="/ranking" style={navLink}>Ranking</Link>
+        <Link to="/writeups" style={navLink}>Writeups</Link>
+        <Link to="/contacto" style={navLink}>Contacto</Link>
         {!user ? (
           <>
             <button
