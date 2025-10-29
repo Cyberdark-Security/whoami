@@ -3,13 +3,14 @@ import React, { useState } from "react";
 export default function AgregarLaboratorio({ onLabAdded }) {
   const [title, setTitle] = useState("");
   const [fecha, setFecha] = useState("");
-  const [megaLink, setMegaLink] = useState("");
+  const [megalink, setMegaLink] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setMensaje(""); setError("");
+    setMensaje("");
+    setError("");
     try {
       const res = await fetch("/api/labs", {
         method: "POST",
@@ -17,13 +18,13 @@ export default function AgregarLaboratorio({ onLabAdded }) {
         body: JSON.stringify({
           title,
           created_at: fecha,
-          megaLink
+          megalink // minúscula: igual al campo DB y backend
         })
       });
       if (!res.ok) throw new Error("Error agregando laboratorio");
       setMensaje("Laboratorio agregado correctamente.");
       setTitle(""); setFecha(""); setMegaLink("");
-      if(onLabAdded) onLabAdded();
+      if (onLabAdded) onLabAdded();
     } catch (err) {
       setError(err.message);
     }
@@ -61,7 +62,7 @@ export default function AgregarLaboratorio({ onLabAdded }) {
         <label>Link de descarga:
           <input
             type="url"
-            value={megaLink}
+            value={megalink}
             onChange={e => setMegaLink(e.target.value)}
             required
             style={{ display: 'block', width: '100%', marginBottom: 10 }}
