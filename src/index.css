@@ -1,81 +1,83 @@
 .cyber-form {
-  max-width: 410px;
+  max-width: 600px;
   margin: 44px auto 0 auto;
-  background: none;
+  background: #23272F;
+  border-left: 6px solid #44FF44;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #062c1712;
+  padding: 30px 36px 28px 36px;
 }
 
 .cyber-title {
   font-family: 'Fira Mono', monospace;
   color: #44FF44;
-  font-size: 2rem;
+  font-size: 1.55rem;
   font-weight: bold;
-  margin: 0 0 28px 0;
-  letter-spacing: 1.6px;
+  margin: 0 0 24px 0;
+  letter-spacing: 1.3px;
 }
 
 .cyber-form-group {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .cyber-label {
   font-family: 'Fira Mono', monospace;
-  color: #0CE0FF;
-  font-weight: 700;
-  margin-bottom: 6px;
-  display: block;
-  font-size: 1rem;
-  letter-spacing: 1px;
+  color: #fff;
+  font-size: 1.08rem;
+  margin-bottom: 5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .cyber-input {
-  width: 100%;
-  background: #181A20;
-  color: #F4F4F4;
-  border: none;
-  border-bottom: 2px solid #44FF44;
+  background: #191b1f;
+  border: 1.5px solid #44FF44;
+  color: #44FF44;
   font-family: 'Fira Mono', monospace;
-  padding: 9px 0 7px 0;
+  border-radius: 5px;
   font-size: 1rem;
   outline: none;
-  transition: border-bottom 0.2s;
+  padding: 8px 10px;
+  margin-bottom: 2px;
 }
 
 .cyber-input:focus {
-  border-bottom: 2px solid #0CE0FF;
+  border-color: #24D05A;
 }
 
 .cyber-btn {
-  width: 100%;
-  background: none;
-  color: #44FF44;
-  border: 2px solid #44FF44;
+  background: #44FF44;
+  color: #171c14;
+  border: none;
   font-family: 'Fira Mono', monospace;
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-weight: bold;
+  font-size: 1.08rem;
   border-radius: 5px;
-  padding: 9px 0;
-  margin-top: 12px;
+  padding: 8px 18px;
   cursor: pointer;
-  transition: color 0.2s, background 0.18s;
+  margin-top: 9px;
+  box-shadow: 0 2px 8px #0CE0FF22;
+  transition: background .2s, color .2s;
 }
 
 .cyber-btn:hover {
-  color: #181A20;
-  background: #44FF44;
-  border-color: #44FF44;
+  background: #24D05A;
+  color: #0CE0FF;
 }
 
 .cyber-error {
-  margin-top: 6px;
   color: #ff3366;
   font-family: 'Fira Mono', monospace;
   font-weight: 600;
-  letter-spacing: 1.2px;
+  margin: 8px 0 0 2px;
 }
 
 .cyber-success {
-  margin-top: 6px;
   color: #24D05A;
   font-family: 'Fira Mono', monospace;
   font-weight: 600;
+  margin: 8px 0 0 2px;
 }
