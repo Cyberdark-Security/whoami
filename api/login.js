@@ -5,7 +5,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: "Método no permitido" });
+    res.status(405).json({ error: "Método no permitido." });
     return;
   }
 
