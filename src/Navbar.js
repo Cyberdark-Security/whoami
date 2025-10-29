@@ -54,14 +54,11 @@ export default function Navbar({ user, setUser }) {
         <Link to="/ranking" style={navLink}>Ranking</Link>
         <Link to="/writeups" style={navLink}>Writeups</Link>
         <Link to="/contacto" style={navLink}>Contacto</Link>
-
-        {/* Iniciar sesión aparece deshabilitado en verde al estar logueado */}
         {user ? (
           <span style={navLinkDisabled}>Iniciar sesión</span>
         ) : (
           <Link to="/login" style={navLink}>Iniciar sesión</Link>
         )}
-
         {!user ? (
           <Link to="/registro" style={navLink}>Registrarse</Link>
         ) : (
@@ -75,7 +72,7 @@ export default function Navbar({ user, setUser }) {
               }}
               onClick={() => setShowLogout((s) => !s)}
             >
-              <span role="img" aria-label="user">👤</span> {user.username}
+              <span role="img" aria-label="user">👤</span> {user.nombre}
               {showLogout && (
                 <button
                   style={{

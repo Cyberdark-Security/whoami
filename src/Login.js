@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ onLogin }) {
+export default function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setError("");
     try {
@@ -16,7 +18,8 @@ export default function Login({ onLogin }) {
       });
       const data = await res.json();
       if (res.ok) {
-        if (onLogin) onLogin(data.user);
+        setUser(data.user);
+        navigate("/");
       } else {
         setError(data.error || "Credenciales incorrectas");
       }
@@ -27,7 +30,7 @@ export default function Login({ onLogin }) {
 
   return (
     <div>
-      <h2 style={{ color: "#44FF44" }}>Iniciar sesión</h2>
+      <h2>Iniciar sesión</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Correo electrónico:</label>

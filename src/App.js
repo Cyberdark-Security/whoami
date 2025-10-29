@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Labs from "./Labs";
 import Navbar from "./Navbar";
-import ModalAuth from "./ModalAuth";
 import Ranking from "./Ranking";
 import Writeups from "./Writeups";
 import Contacto from "./Contacto";
+import Login from "./Login";
+import Registro from "./Registro";
 
 const LABS = [
   { id: 1, title: "Lab 1: Escalada de privilegios - CVE-2025-32463", megaLink: "https://mega.nz/ejemplo-lab1" },
@@ -15,27 +16,10 @@ const LABS = [
 
 function App() {
   const [user, setUser] = useState(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState(null);
-
-  const onOpenAuthModal = (mode) => {
-    setAuthMode(mode);
-    setShowAuthModal(true);
-  };
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-    setShowAuthModal(false);
-  };
-
-  const handleRegister = (userData) => {
-    setUser(userData);
-    setShowAuthModal(false);
-  };
 
   return (
     <Router>
-      <Navbar user={user} setUser={setUser} onOpenAuthModal={onOpenAuthModal} />
+      <Navbar user={user} setUser={setUser} />
       <main style={{ maxWidth: 800, margin: "50px auto", padding: 24 }}>
         <Routes>
           <Route path="/" element={
@@ -43,26 +27,18 @@ function App() {
               labs={LABS}
               user={user}
               setUser={setUser}
-              onOpenAuthModal={onOpenAuthModal}
             />
           } />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/writeups" element={<Writeups />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/registro" element={<Registro setUser={setUser} />} />
         </Routes>
       </main>
       <footer style={{ color: "#0CE0FF", textAlign: "center", fontFamily: "Fira Mono", marginTop: 40 }}>
         © 2025 WHOAMI. Todos los derechos reservados.
       </footer>
-      {showAuthModal && (
-        <ModalAuth
-          mode={authMode}
-          setMode={setAuthMode}
-          onClose={() => setShowAuthModal(false)}
-          onLogin={handleLogin}
-          onRegister={handleRegister}
-        />
-      )}
     </Router>
   );
 }

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Registro({ onRegister }) {
+export default function Registro({ setUser }) {
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +22,9 @@ export default function Registro({ onRegister }) {
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
-        if (onRegister) onRegister(data.user);
+        setUser(data.user);
+        setSuccess("¡Registro exitoso!");
+        navigate("/");
       } else {
         setError(data.error || "Error al registrar");
       }
@@ -32,7 +35,7 @@ export default function Registro({ onRegister }) {
 
   return (
     <div>
-      <h2 style={{ color: "#44FF44" }}>Registro</h2>
+      <h2>Registro</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Nombre:</label>
