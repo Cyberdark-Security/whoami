@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import AgregarLaboratorio from "./AgregarLaboratorio";  // importa el nuevo componente
+import AgregarLaboratorio from "./AgregarLaboratorio";
 
 export default function Labs({ user }) {
   const [labs, setLabs] = useState([]);
@@ -53,12 +53,21 @@ export default function Labs({ user }) {
             <div style={{ fontSize: "1.2em", color: "#0ff", fontWeight: "bold" }}>
               {l.title}
             </div>
-            <div style={{ color: "#aed", fontSize: "1em" }}>
-              {l.description}
-            </div>
             <div style={{ fontSize: "0.85em", color: "#aaa", marginTop: 2 }}>
               Publicado: {new Date(l.created_at).toLocaleDateString()}
             </div>
+            {!!l.megalink && (
+              <div style={{ marginTop: 8 }}>
+                <a
+                  href={l.megalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#39ff14", textDecoration: "underline", wordBreak: "break-all" }}
+                >
+                  Descargar laboratorio
+                </a>
+              </div>
+            )}
           </li>
         ))}
       </ul>
