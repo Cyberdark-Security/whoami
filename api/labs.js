@@ -24,7 +24,8 @@ module.exports = async (req, res) => {
       );
       res.status(201).json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: "Error agregando laboratorio" });
+      console.error("Error al agregar laboratorio:", err); // imprime error completo en logs del servidor
+      res.status(500).json({ error: err.message }); // devuelve el mensaje exacto de error al frontend
     }
   } else {
     res.status(405).json({ error: "Método no permitido" });
