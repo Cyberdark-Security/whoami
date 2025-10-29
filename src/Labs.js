@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import AgregarLaboratorio from "./AgregarLaboratorio";
+
+// Simula la función para enviar writeup o evidencia, cámbiala según tu backend
+const enviarEvidencia = labId => alert(`Subir evidencia para lab ${labId}`);
 
 export default function Labs({ user }) {
   const [labs, setLabs] = useState([]);
@@ -24,71 +26,99 @@ export default function Labs({ user }) {
 
   return (
     <main style={{
-      width: "100%",
-      maxWidth: 900,
-      margin: "3rem auto",
+      maxWidth: 950,
+      margin: "2em auto",
       background: "#18191b",
-      border: "1px solid #39ff14",
-      borderRadius: "10px",
-      padding: "2em",
-      boxSizing: "border-box",
-      overflowX: "auto"
+      border: "1.5px solid #39ff14",
+      borderRadius: "14px",
+      padding: "2.4em",
+      boxSizing: "border-box"
     }}>
-      <h2 style={{ color: "#39ff14" }}>Laboratorios</h2>
-
-      {/* Enlace visible para admins */}
-      {user && user.role === "admin" && (
-        <div style={{ marginBottom: 18 }}>
-          <a
-            href="/admin/panel"
-            style={{
-              color: "#39ff14",
-              fontWeight: "bold",
-              textDecoration: "underline",
-              fontSize: "1.1em"
-            }}
-          >
-            Ir al Panel de Administración
-          </a>
-        </div>
-      )}
-
-      {user && user.role === "admin" && (
-        <AgregarLaboratorio onLabAdded={recargarLaboratorios} />
-      )}
+      <h1 style={{
+        color: "#39ff14",
+        fontFamily: "monospace",
+        fontWeight: 900,
+        fontSize: "2.4em",
+        margin: "0 0 28px 0",
+        letterSpacing: "2px"
+      }}>
+        Laboratorios Dockerizados de Pentesting
+      </h1>
 
       {labs.length === 0 && <p style={{ color: "#fbd" }}>No hay laboratorios publicados.</p>}
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {labs.map(l => (
-          <li key={l.id} style={{
-            background: "#23272f",
-            borderRadius: "6px",
-            marginBottom: "14px",
-            padding: "12px 20px",
-            color: "#fff"
-          }}>
-            <div style={{ fontSize: "1.2em", color: "#0ff", fontWeight: "bold" }}>
-              {l.title}
+      <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+        {labs.map((l, idx) => (
+          <section
+            key={l.id}
+            style={{
+              background: "#21242a",
+              padding: "28px 32px 22px 32px",
+              borderRadius: "18px",
+              border: "3.5px solid #39ff14",
+              marginBottom: 0,
+              fontFamily: "monospace"
+            }}>
+            <div style={{
+              color: "#71e35b",
+              fontSize: "2em",
+              fontWeight: 800,
+              marginBottom: "8px",
+              letterSpacing: "1px"
+            }}>
+              {`Lab ${idx + 1}: ${l.title}`}
             </div>
-            <div style={{ fontSize: "0.85em", color: "#aaa", marginTop: 2 }}>
+            <div style={{
+              fontWeight: "bold",
+              color: "#b8ffcb",
+              fontSize: "1.05em",
+              marginBottom: "12px"
+            }}>
               Publicado: {new Date(l.created_at).toLocaleDateString()}
             </div>
-            {!!l.megalink && (
-              <div style={{ marginTop: 8 }}>
-                <a
-                  href={l.megalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "#39ff14", textDecoration: "underline", wordBreak: "break-all" }}
-                >
-                  Descargar laboratorio
-                </a>
-              </div>
-            )}
-          </li>
+            <div style={{ display: "flex", gap: "16px" }}>
+              <a
+                href={l.megalink}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: "#39ff14",
+                  color: "#15191b",
+                  fontWeight: 900,
+                  border: "none",
+                  borderRadius: "7px",
+                  padding: "6px 19px",
+                  fontFamily: "monospace",
+                  textDecoration: "underline",
+                  fontSize: "1.1em",
+                  marginRight: 4,
+                  letterSpacing: ".5px"
+                }}>
+                Descargar
+              </a>
+              {/* Mostrar solo si hay usuario logueado */}
+              {user && (
+                <button
+                  onClick={() => enviarEvidencia(l.id)}
+                  style={{
+                    background: "#71ff84",
+                    color: "#21242a",
+                    fontWeight: 900,
+                    border: "none",
+                    borderRadius: "7px",
+                    padding: "6px 20px",
+                    fontFamily: "monospace",
+                    fontSize: "1em",
+                    cursor: "pointer",
+                    boxShadow: "0 1px 7px #101c",
+                  }}>
+                  Enviar evidencia
+                </button>
+              )}
+            </div>
+          </section>
         ))}
-      </ul>
+      </div>
     </main>
   );
 }
