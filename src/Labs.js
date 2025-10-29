@@ -10,7 +10,7 @@ export default function Labs({ labs, user, setUser, onOpenAuthModal }) {
 
   return (
     <div>
-      <h1 style={{color:"#44FF44", fontWeight: 700, fontSize: 32, marginBottom: 16}}>Laboratorios Dockerizados</h1>
+      <h1 style={{color:"#44FF44", fontWeight: 700, fontSize: 32, marginBottom: 16}}>Laboratorios Dockerizados de Pentesting</h1>
       {labs.map(lab => (
         <div key={lab.id} style={{
           background: "#23272F",

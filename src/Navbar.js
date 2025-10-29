@@ -10,21 +10,18 @@ const navLink = {
   padding: "4px 0",
   transition: "color 0.2s"
 };
-const navButton = {
-  background: "linear-gradient(90deg, #24D05A 60%, #0CE0FF 100%)",
-  color: "#181A20",
-  fontWeight: 700,
-  border: "none",
-  borderRadius: 4,
-  padding: "7px 18px",
-  boxShadow: "0 2px 8px #0CE0FF44",
-  cursor: "pointer",
+
+const navLinkDisabled = {
+  color: "#24D05A",
+  fontWeight: 600,
   fontSize: 16,
-  marginLeft: 8,
-  marginRight: 4
+  marginRight: 20,
+  padding: "4px 0",
+  textDecoration: "none",
+  cursor: "not-allowed"
 };
 
-export default function Navbar({ user, setUser, onOpenAuthModal }) {
+export default function Navbar({ user, setUser }) {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef(null);
 
@@ -57,22 +54,16 @@ export default function Navbar({ user, setUser, onOpenAuthModal }) {
         <Link to="/ranking" style={navLink}>Ranking</Link>
         <Link to="/writeups" style={navLink}>Writeups</Link>
         <Link to="/contacto" style={navLink}>Contacto</Link>
+
+        {/* Iniciar sesión aparece deshabilitado en verde al estar logueado */}
+        {user ? (
+          <span style={navLinkDisabled}>Iniciar sesión</span>
+        ) : (
+          <Link to="/login" style={navLink}>Iniciar sesión</Link>
+        )}
+
         {!user ? (
-          <>
-            <button
-              style={navButton}
-              onClick={() => onOpenAuthModal("login")}
-            >
-              Iniciar sesión
-            </button>
-            <button
-              style={navButton}
-              onClick={() => onOpenAuthModal("registro")}
-            >
-              Registrarse
-            </button>
-            <span style={{ color: "#777", marginLeft: 10 }}>Invitado</span>
-          </>
+          <Link to="/registro" style={navLink}>Registrarse</Link>
         ) : (
           <div ref={containerRef} style={{ position: "relative", marginLeft: 18 }}>
             <span
