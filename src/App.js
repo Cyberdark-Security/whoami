@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./AuthContext"; // ajusta ruta según tu proyecto
 import Navbar from "./Navbar";
 import Login from "./Login";
 import Registro from "./Registro";
@@ -16,6 +15,11 @@ function isAdminLogged() {
 }
 
 function App() {
+  const [user, setUser] = useState(() => {
+    const almacenado = localStorage.getItem("user");
+    return almacenado ? JSON.parse(almacenado) : null;
+  });
+
   const [forceUpdate, setForceUpdate] = useState(0);
 
   function handleAdminLogin() {
@@ -23,32 +27,30 @@ function App() {
   }
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/ranking" element={<Ranking />} />
-          <Route path="/labs" element={<Labs />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/registro" element={<Registro />} />
-          <Route
-            path="/admin/login"
-            element={<AdminLogin onLogin={handleAdminLogin} />}
-          />
-          <Route
-            path="/admin/panel"
-            element={
-              isAdminLogged() ? (
-                <AdminWriteups />
-              ) : (
-                <Navigate to="/admin/login" replace />
-              )
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <Navbar user={user} setUser={setUser} />
+      <Routes>
+        <Route path="/" element={<Home user={user} />} />
+        <Route path="/ranking" element={<Ranking user={user} />} />
+        <Route path="/labs" element={<Labs user={user} />} />
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/registro" element={<Registro setUser={setUser} />} />
+        <Route
+          path="/admin/login"
+          element={<AdminLogin onLogin={handleAdminLogin} />}
+        />
+        <Route
+          path="/admin/panel"
+          element={
+            isAdminLogged() ? (
+              <AdminWriteups />
+            ) : (
+              <Navigate to="/admin/login" replace />
+            )
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

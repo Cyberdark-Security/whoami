@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // Ajusta la ruta
 
-export default function Login() {
-  const { login } = useAuth();
+export default function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,20 +14,19 @@ export default function Login() {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
-
       const data = await res.json();
 
       if (res.ok && data.user) {
-        login(data.user);          // Actualiza el contexto global
-        navigate("/");             // Redirige al home o dashboard
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/");
       } else {
         setError(data.error || "Error en el login");
       }
-    } catch (err) {
+    } catch {
       setError("Error de conexión");
-      console.error(err);
     }
   };
 
