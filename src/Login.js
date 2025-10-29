@@ -22,6 +22,7 @@ export default function Login({ setUser }) {
         navigate("/");
       } else {
         setError(data.error || "Credenciales incorrectas");
+        if (data.detail) console.log("Backend detail:", data.detail);
       }
     } catch {
       setError("Error de conexión");

@@ -27,9 +27,11 @@ export default function Registro({ setUser }) {
         navigate("/");
       } else {
         setError(data.error || "Error al registrar");
+        if (data.detail) console.log("Backend detail:", data.detail);
       }
     } catch (err) {
       setError("Error de conexión");
+      console.log("Fetch error:", err);
     }
   };
 
