@@ -21,14 +21,18 @@ export default function Registro({ setUser }) {
       const data = await res.json();
       console.log("Respuesta backend", data, res.status, res.ok);
 
+      // Debug extra
       if (res.ok && data.user) {
+        console.log("Registrado OK, guardando usuario:", data.user);
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/");
       } else if (res.status === 409) {
         setError("El correo ya está registrado.");
+        console.log("Error: correo duplicado");
       } else {
         setError(data.error || "Hubo un error en el registro.");
+        console.log("Error genérico del backend:", data.error);
       }
     } catch (err) {
       setError("Error de conexión");
