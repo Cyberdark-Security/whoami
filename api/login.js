@@ -21,16 +21,18 @@ module.exports = async (req, res) => {
       [email]
     );
 
+    // NUNCA reveles si el usuario existe o no, solo verifica
     if (result.rows.length === 0) {
-      res.status(400).json({ error: "Usuario no encontrado" });
+      // Simula el tiempo de hash para evitar ataques de tiempo
+      await bcrypt.hash(password, 10);
+      res.status(401).json({ error: "Usuario y/o contraseña incorrectos" });
       return;
     }
-
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
 
     if (!valid) {
-      res.status(401).json({ error: "Contraseña incorrecta" });
+      res.status(401).json({ error: "Usuario y/o contraseña incorrectos" });
       return;
     }
 
@@ -43,6 +45,6 @@ module.exports = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: "Error del servidor", detail: err.message });
+    res.status(500).json({ error: "Error del servidor" });
   }
 };

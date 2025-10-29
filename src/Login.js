@@ -20,9 +20,10 @@ export default function Login({ setUser }) {
       if (res.ok) {
         setUser(data.user);
         navigate("/");
+      } else if (res.status === 401) {
+        setError("Usuario y/o contraseña incorrectos");
       } else {
-        setError(data.error || "Credenciales incorrectas");
-        if (data.detail) console.log("Backend detail:", data.detail);
+        setError("Hubo un problema al iniciar sesión. Intenta más tarde.");
       }
     } catch {
       setError("Error de conexión");
