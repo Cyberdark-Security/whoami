@@ -17,17 +17,13 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const existe = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email]
-    );
+    const existe = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existe.rows.length > 0) {
       res.status(409).json({ error: "El correo ya está registrado." });
       return;
     }
 
     const hash = await bcrypt.hash(password, 10);
-
     const result = await pool.query(
       `INSERT INTO users (nombre, apellido, email, password_hash, role)
        VALUES ($1, $2, $3, $4, $5)
@@ -35,11 +31,10 @@ module.exports = async (req, res) => {
       [nombre, apellido, email, hash, 'user']
     );
 
-    // Asegúrate de esta línea: ¡debe usar result.rows[0]!
-    return res.status(200).json({ user: result.rows[0] });
+    // Responde solo esto para el frontend:
+    res.status(200).json({ user: result.rows[0] });
 
   } catch (err) {
-    // Muestra error sólo si realmente ocurrió un fallo, y como JSON
     res.status(500).json({ error: "Error en el servidor", details: err.message });
   }
 };
