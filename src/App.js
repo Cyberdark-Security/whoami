@@ -17,8 +17,8 @@ function isAdminLogged() {
 
 function App() {
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [user, setUser] = useState(null); // <-- Añade esta línea
 
-  // Para refrescar UI tras login/logout admin
   function handleAdminLogin() {
     setForceUpdate(forceUpdate + 1);
   }
@@ -31,7 +31,10 @@ function App() {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/labs" element={<Labs />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
+        <Route
+          path="/registro"
+          element={<Registro setUser={setUser} />} // <-- Cambia aquí
+        />
         <Route
           path="/admin/login"
           element={<AdminLogin onLogin={handleAdminLogin} />}
