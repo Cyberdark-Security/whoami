@@ -4,26 +4,37 @@ const bcrypt = require('bcryptjs');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ error: "Método no permitido" });
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
 
   const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ error: "Faltan datos" });
+  if (!email || !password) {
+    res.status(400).json({ error: "Faltan datos" });
+    return;
+  }
 
   try {
     const result = await pool.query(
-      "SELECT id, nombre, apellido, email, password_hash FROM users WHERE email=$1",
+      'SELECT id, nombre, apellido, email, password_hash FROM users WHERE email=$1',
       [email]
     );
-    if (result.rows.length === 0)
-      return res.status(400).json({ error: "Usuario no encontrado" });
+
+    if (result.rows.length === 0) {
+      res.status(400).json({ error: "Usuario no encontrado" });
+      return;
+    }
 
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
 
-    if (!valid) return res.status(401).json({ error: "Contraseña incorrecta" });
+    if (!valid) {
+      res.status(401).json({ error: "Contraseña incorrecta" });
+      return;
+    }
 
-    return res.status(200).json({
+    res.status(200).json({
       user: {
         id: user.id,
         nombre: user.nombre,
@@ -32,6 +43,6 @@ module.exports = async (req, res) => {
       }
     });
   } catch (err) {
-    return res.status(500).json({ error: "Error del servidor" });
+    res.status(500).json({ error: "Error del servidor", detail: err.message });
   }
 };
