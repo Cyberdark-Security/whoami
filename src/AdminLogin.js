@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -19,9 +21,9 @@ export default function AdminLogin({ onLogin }) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         if (onLogin) onLogin(data.user);
-        window.location.reload(); // fuerza refresco para mostrar menú admin
+        navigate("/admin/panel", { replace: true }); // Redirige directamente al panel admin
       } else {
-        setError(data.error || "Error al iniciar sesión.");
+        setError(data.error || "Error al iniciar sesión");
       }
     } catch {
       setError("Error de conexión");

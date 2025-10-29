@@ -17,8 +17,10 @@ export default function Login({ setUser }) {
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.user) {
+        // Guarda en el estado y en localStorage
         setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/");
       } else if (res.status === 401) {
         setError("Usuario y/o contraseña incorrectos");
