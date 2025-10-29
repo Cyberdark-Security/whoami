@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
   if (req.method === "GET") {
     try {
       const result = await pool.query(
-        `SELECT id, title, description, created_at, megaLink FROM labs ORDER BY created_at DESC`
+        `SELECT id, title, created_at, megaLink FROM labs ORDER BY created_at DESC`
       );
       res.status(200).json({ labs: result.rows });
     } catch (err) {
