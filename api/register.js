@@ -1,76 +1,83 @@
-require('dotenv').config();
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
+export default function Registro({ setUser }) {
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: "Método no permitido", flag: "method_error" });
-    return;
-  }
-
-  const { nombre, apellido, email, password } = req.body;
-  
-  if (!nombre || !apellido || !email || !password) {
-    res.status(400).json({ error: "Todos los campos son obligatorios", flag: "missing_fields" });
-    return;
-  }
-
-  // VALIDACIÓN de contraseña: mínimo 6 y no solo espacios
-  if (password.trim().length < 6) {
-    res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres y no solo espacios.", flag: "invalid_password" });
-    return;
-  }
-
-  try {
-    // Prueba conexión
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setError("");
     try {
-      await pool.query('SELECT 1');
-    } catch (connErr) {
-      res.status(500).json({ error: "No se pudo conectar con la base de datos", flag: "connection_error", detail: connErr.message });
-      return;
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, apellido, email, password })
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/");
+      } else if (res.status === 409) {
+        setError("El correo ya está registrado.");
+      } else {
+        setError(data.error || "Hubo un error en el registro.");
+      }
+    } catch {
+      setError("Error de conexión");
     }
+  };
 
-    // Ver si el correo ya existe
-    let exists;
-    try {
-      exists = await pool.query("SELECT id FROM users WHERE email=$1", [email]);
-    } catch (existsErr) {
-      res.status(500).json({ error: "Error buscando correo", flag: "search_email_error", detail: existsErr.message });
-      return;
-    }
-    if (exists.rows.length > 0) {
-      res.status(400).json({ error: "El correo ya está registrado", flag: "email_exists" });
-      return;
-    }
-
-    // Hash
-    let hash;
-    try {
-      hash = await bcrypt.hash(password, 10);
-    } catch (hashErr) {
-      res.status(500).json({ error: "Error haciendo hash", flag: "bcrypt_error", detail: hashErr.message });
-      return;
-    }
-
-    // Insertar usuario
-    let result;
-    try {
-      result = await pool.query(
-       'INSERT INTO users (nombre, apellido, email, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, apellido, email, role',
-        [nombre, apellido, email, hash, 'user']
-      );
-    } catch (insertErr) {
-      res.status(500).json({ error: "Error insertando usuario", flag: "insert_error", detail: insertErr.message });
-      return;
-    }
-
-
-    res.status(201).json({ user: result.rows[0], flag: "registro_ok" });
-
-  } catch (err) {
-    res.status(500).json({ error: "Error del servidor", flag: "generic_error", detail: err.message });
-  }
-};
+  return (
+    <form className="cyber-form" onSubmit={handleSubmit}>
+      <div className="cyber-title">Registro</div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Nombre</label>
+        <input
+          className="cyber-input"
+          type="text"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Apellido</label>
+        <input
+          className="cyber-input"
+          type="text"
+          value={apellido}
+          onChange={e => setApellido(e.target.value)}
+          required
+        />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Correo electrónico</label>
+        <input
+          className="cyber-input"
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Contraseña</label>
+        <input
+          className="cyber-input"
+          type="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <button className="cyber-btn" type="submit">Registrar</button>
+      {error && <div className="cyber-error">{error}</div>}
+    </form>
+  );
+}

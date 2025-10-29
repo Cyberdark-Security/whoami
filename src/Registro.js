@@ -7,24 +7,11 @@ export default function Registro({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setError("");
-    setSuccess("");
-    
-    // Validación local antes de enviar al backend
-    if (!nombre || !apellido || !email || !password) {
-      setError("Todos los campos son obligatorios.");
-      return;
-    }
-    if (password.trim().length < 6) {
-      setError("La contraseña debe tener mínimo 6 caracteres y no solo espacios.");
-      return;
-    }
-
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
@@ -32,14 +19,15 @@ export default function Registro({ setUser }) {
         body: JSON.stringify({ nombre, apellido, email, password })
       });
       const data = await res.json();
-      if (res.ok) {
+
+      if (res.ok && data.user) {
         setUser(data.user);
-        setSuccess("¡Registro exitoso!");
-        setTimeout(() => navigate("/"), 1300);
-      } else if (res.status === 400) {
-        setError(data.error || "Los datos no son válidos.");
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/");
+      } else if (res.status === 409) {
+        setError("El correo ya está registrado.");
       } else {
-        setError("No se pudo registrar. Intenta de nuevo.");
+        setError(data.error || "Hubo un error en el registro.");
       }
     } catch {
       setError("Error de conexión");
@@ -51,23 +39,46 @@ export default function Registro({ setUser }) {
       <div className="cyber-title">Registro</div>
       <div className="cyber-form-group">
         <label className="cyber-label">Nombre</label>
-        <input className="cyber-input" type="text" value={nombre} onChange={e => setNombre(e.target.value)} required />
+        <input
+          className="cyber-input"
+          type="text"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
       </div>
       <div className="cyber-form-group">
         <label className="cyber-label">Apellido</label>
-        <input className="cyber-input" type="text" value={apellido} onChange={e => setApellido(e.target.value)} required />
+        <input
+          className="cyber-input"
+          type="text"
+          value={apellido}
+          onChange={e => setApellido(e.target.value)}
+          required
+        />
       </div>
       <div className="cyber-form-group">
         <label className="cyber-label">Correo electrónico</label>
-        <input className="cyber-input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <input
+          className="cyber-input"
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
       </div>
       <div className="cyber-form-group">
         <label className="cyber-label">Contraseña</label>
-        <input className="cyber-input" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+        <input
+          className="cyber-input"
+          type="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
       </div>
       <button className="cyber-btn" type="submit">Registrar</button>
       {error && <div className="cyber-error">{error}</div>}
-      {success && <div className="cyber-success">{success}</div>}
     </form>
   );
 }
