@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
@@ -36,13 +38,16 @@ module.exports = async (req, res) => {
       return;
     }
 
+   // Ejemplo respuesta tras login exitoso:
     res.status(200).json({
       user: {
         id: user.id,
         nombre: user.nombre,
         apellido: user.apellido,
-        email: user.email
-      }
+        email: user.email,
+        role: user.role
+      },
+      flag: "login_ok"
     });
   } catch (err) {
     res.status(500).json({ error: "Error del servidor" });

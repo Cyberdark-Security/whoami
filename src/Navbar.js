@@ -2,8 +2,8 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function isAdminLogged() {
-  const token = localStorage.getItem("token");
-  return !!token;
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  return user?.role === 'admin';
 }
 
 export default function Navbar() {
