@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext"; // Ajusta la ruta
 
-export default function Login({ setUser }) {
+export default function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,30 +13,29 @@ export default function Login({ setUser }) {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
+
       if (res.ok && data.user) {
-        // Guarda en el estado y en localStorage
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/");
-      } else if (res.status === 401) {
-        setError("Usuario y/o contraseña incorrectos");
+        login(data.user);          // Actualiza el contexto global
+        navigate("/");             // Redirige al home o dashboard
       } else {
-        setError("Hubo un problema al iniciar sesión.");
+        setError(data.error || "Error en el login");
       }
-    } catch {
+    } catch (err) {
       setError("Error de conexión");
+      console.error(err);
     }
   };
 
   return (
     <form className="cyber-form" onSubmit={handleSubmit}>
-      <div className="cyber-title">Iniciar sesión</div>
+      <div className="cyber-title">Login</div>
       <div className="cyber-form-group">
         <label className="cyber-label">Correo electrónico</label>
         <input
@@ -55,7 +56,7 @@ export default function Login({ setUser }) {
           required
         />
       </div>
-      <button className="cyber-btn" type="submit">Entrar</button>
+      <button className="cyber-btn" type="submit">Iniciar sesión</button>
       {error && <div className="cyber-error">{error}</div>}
     </form>
   );

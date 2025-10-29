@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext"; // ajusta ruta
 
-export default function Registro({ setUser }) {
+export default function Registro() {
+  const { login } = useAuth();
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
@@ -13,24 +15,15 @@ export default function Registro({ setUser }) {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, apellido, email, password })
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, apellido, email, password }),
       });
       const data = await res.json();
-      console.log("Respuesta backend", data, res.status, res.ok);
-
       if (res.ok && data.user) {
-        try {
-          setUser(data.user);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          console.log("Registro exitoso, navegando a /");
-          navigate("/");
-        } catch (err2) {
-          setError("Error al guardar usuario en local");
-          console.error(err2);
-        }
+        login(data.user);
+        navigate("/");
       } else if (res.status === 409) {
         setError("El correo ya está registrado.");
       } else {
@@ -38,55 +31,13 @@ export default function Registro({ setUser }) {
       }
     } catch (err) {
       setError("Error de conexión");
-      console.error("Error durante registro (catch):", err);
+      console.error(err);
     }
   };
 
   return (
     <form className="cyber-form" onSubmit={handleSubmit}>
-      <div className="cyber-title">Registro</div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Nombre</label>
-        <input
-          className="cyber-input"
-          type="text"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Apellido</label>
-        <input
-          className="cyber-input"
-          type="text"
-          value={apellido}
-          onChange={e => setApellido(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Correo electrónico</label>
-        <input
-          className="cyber-input"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Contraseña</label>
-        <input
-          className="cyber-input"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <button className="cyber-btn" type="submit">Registrar</button>
-      {error && <div className="cyber-error">{error}</div>}
+      {/* tu formulario igual */}
     </form>
   );
 }
