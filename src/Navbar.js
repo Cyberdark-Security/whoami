@@ -21,87 +21,45 @@ export default function Navbar({ user, setUser }) {
   }
 
   return (
-    <nav style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "0 2vw"
-    }}>
-      {/* Zona izquierda */}
-      <div style={{ display: "flex", gap: "18px" }}>
-        <Link to="/" style={{ fontWeight: "bold", color: "#39ff14" }}>WHOAMI</Link>
+    <nav className="navbar-custom">
+      <div className="navbar-left">
+        <Link to="/" className="navbar-logo">WHOAMI</Link>
       </div>
-      {/* Zona derecha (centrar cada elemento con gap) */}
-      <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-        <Link to="/labs" className="navbar-link">Laboratorios</Link>
-        <Link to="/ranking" className="navbar-link">Ranking</Link>
-        <Link to="/writeups" className="navbar-link">Writeups</Link>
-        <Link to="/contacto" className="navbar-link">Contacto</Link>
-        <Link to="/admin/login" className="navbar-link">Admin</Link>
+      <div className="navbar-right">
+        <Link to="/labs">Laboratorios</Link>
+        <Link to="/ranking">Ranking</Link>
+        <Link to="/writeups">Writeups</Link>
+        <Link to="/contacto">Contacto</Link>
+        <Link to="/admin/login">Admin</Link>
 
-        {/* Si no está logueado, muestra ambos */}
-        {!user &&
+        {!user && (
           <>
-            <span
-              className="navbar-link"
-              style={{ cursor: "pointer", color: "#0ff", fontWeight: 700 }}
-              onClick={() => navigate("/login")}
-            >
+            <span className="navbar-link" onClick={() => navigate("/login")}>
               Iniciar sesión
             </span>
-            <Link to="/registro" className="navbar-link" style={{ fontWeight: 700 }}>
+            <Link to="/registro" className="navbar-link">
               Registrarse
             </Link>
           </>
-        }
-        {/* Si está logueado, nombre y menú sesión */}
-        {user &&
+        )}
+        {user && (
           <>
             <span style={{ fontWeight: "bold", color: "#fff" }}>
               Hola, {user.nombre}
             </span>
             <span
-              style={{
-                color: "#0ff",
-                fontWeight: 700,
-                cursor: "pointer",
-                userSelect: "none",
-                position: "relative"
-              }}
+              className="navbar-link navbar-dropdown"
               onClick={handleSesionClick}
             >
               Sesión ▼
               {menuOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "28px",
-                    right: 0,
-                    background: "#222",
-                    border: "1px solid #0f0",
-                    borderRadius: "4px",
-                    padding: "8px 16px",
-                    zIndex: 99,
-                  }}
-                >
-                  <button
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#f22",
-                      fontWeight: 700,
-                      fontSize: "1em",
-                      cursor: "pointer",
-                    }}
-                    onClick={handleLogout}
-                  >
-                    Cerrar sesión
-                  </button>
+                <div className="navbar-dropdown-menu">
+                  <button onClick={handleLogout}>Cerrar sesión</button>
                 </div>
               )}
             </span>
           </>
-        }
+        )}
       </div>
     </nav>
   );
