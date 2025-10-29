@@ -32,6 +32,6 @@ module.exports = async (req, res) => {
 
     res.status(201).json({ user: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: "Error del servidor", detail: err.message });
-  }
+  res.status(500).json({ error: "Error del servidor", detail: err.message });
+}
 };
