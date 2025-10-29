@@ -1,45 +1,38 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Labs from "./Labs";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Navbar";
-import Ranking from "./Ranking";
-import Writeups from "./Writeups";
-import Contacto from "./Contacto";
 import Login from "./Login";
 import Registro from "./Registro";
-
-const LABS = [
-  { id: 1, title: "Lab 1: Escalada de privilegios - CVE-2025-32463", megaLink: "https://mega.nz/ejemplo-lab1" },
-  { id: 2, title: "Lab 2: Pivoting multi-nube Azure-AWS", megaLink: "https://mega.nz/ejemplo-lab2" },
-  { id: 3, title: "Lab 3: Configuraciones inseguras Docker", megaLink: "https://mega.nz/ejemplo-lab3" }
-];
+import Home from "./Home";
 
 function App() {
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    else localStorage.removeItem("user");
+  }, [user]);
+
   return (
-    <Router>
+    <BrowserRouter>
       <Navbar user={user} setUser={setUser} />
-      <main style={{ maxWidth: 800, margin: "50px auto", padding: 24 }}>
-        <Routes>
-          <Route path="/" element={
-            <Labs
-              labs={LABS}
-              user={user}
-              setUser={setUser}
-            />
-          } />
-          <Route path="/ranking" element={<Ranking />} />
-          <Route path="/writeups" element={<Writeups />} />
-          <Route path="/contacto" element={<Contacto />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/registro" element={<Registro setUser={setUser} />} />
-        </Routes>
-      </main>
-      <footer style={{ color: "#0CE0FF", textAlign: "center", fontFamily: "Fira Mono", marginTop: 40 }}>
-        © 2025 WHOAMI. Todos los derechos reservados.
-      </footer>
-    </Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/login"
+          element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/registro"
+          element={!user ? <Registro setUser={setUser} /> : <Navigate to="/" />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
