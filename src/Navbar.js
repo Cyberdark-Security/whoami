@@ -20,10 +20,11 @@ const navButton = {
   boxShadow: "0 2px 8px #0CE0FF44",
   cursor: "pointer",
   fontSize: 16,
-  marginLeft: 16
+  marginLeft: 8,
+  marginRight: 4
 };
 
-export default function Navbar({ user, setUser }) {
+export default function Navbar({ user, setUser, onOpenAuthModal }) {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef(null);
 
@@ -56,8 +57,24 @@ export default function Navbar({ user, setUser }) {
         <a href="#" style={navLink}>Ranking</a>
         <a href="#" style={navLink}>Writeups</a>
         <a href="#" style={navLink}>Contacto</a>
-        <div ref={containerRef} style={{ position: "relative", marginLeft: 18 }}>
-          {user ? (
+        {!user ? (
+          <>
+            <button
+              style={navButton}
+              onClick={() => onOpenAuthModal("login")}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              style={navButton}
+              onClick={() => onOpenAuthModal("registro")}
+            >
+              Registrarse
+            </button>
+            <span style={{ color: "#777", marginLeft: 10 }}>Invitado</span>
+          </>
+        ) : (
+          <div ref={containerRef} style={{ position: "relative", marginLeft: 18 }}>
             <span
               style={{
                 color: "#c483ec",
@@ -92,10 +109,8 @@ export default function Navbar({ user, setUser }) {
                 </button>
               )}
             </span>
-          ) : (
-            <span style={{ color: "#777" }}>Invitado</span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </nav>
   );
