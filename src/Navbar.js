@@ -1,62 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-// identificar si el usuario es admin
-function isAdminLogged() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  return user?.role === "admin";
-}
-
-export default function Navbar() {
+export default function Navbar({ user, setUser }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  function logoutAdmin() {
-    localStorage.removeItem("token");
+  function handleLogout() {
+    setUser(null);
     localStorage.removeItem("user");
-    navigate("/admin");
-    window.location.reload();
+    setMenuOpen(false);
+    navigate("/");
+  }
+
+  function handleSesionClick() {
+    if (user) {
+      setMenuOpen(!menuOpen); // despliega/cierra menú
+    } else {
+      navigate("/login");
+    }
   }
 
   return (
-    <nav style={{
-      background: "#181A20",
-      borderBottom: "2px solid #24D05A",
-      padding: "18px 36px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      fontFamily: "'Fira Mono', monospace"
-    }}>
-      <div style={{
-        fontFamily: "'Fira Mono', monospace",
-        fontWeight: "bold",
-        color: "#44FF44",
-        fontSize: "24px",
-        letterSpacing: "2px"
-      }}>WHOAMI</div>
-      <div>
-        <Link to="/" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Laboratorios</Link>
-        <Link to="/ranking" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Ranking</Link>
-        <Link to="/writeups" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Writeups</Link>
-        <Link to="/contacto" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Contacto</Link>
-        <Link to="/login" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Iniciar sesión</Link>
-        <Link to="/registro" style={{ color: "#0CE0FF", fontWeight: 700, marginRight: 22, textDecoration: "none" }}>Registrarse</Link>
-        {/* SOLO muestra menu ADMIN si está logueado como admin */}
-        {!isAdminLogged() && (
-          <Link to="/admin/login" style={{ color: "#24D05A", fontWeight: 700, textDecoration: "none" }}>Admin</Link>
-        )}
-        {isAdminLogged() && (
-          <>
-            <Link to="/admin/panel" style={{ color: "#24D05A", fontWeight: 700, marginRight: 14, textDecoration: "none" }}>Panel Admin</Link>
-            <button 
-              onClick={logoutAdmin} 
-              style={{ color: "#F44336", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}
-            >
-              Cerrar admin
-            </button>
-          </>
-        )}
-      </div>
+    <nav style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+      <Link to="/">Home</Link>
+      <Link to="/ranking">Ranking</Link>
+      <Link to="/labs">Labs</Link>
+      <Link to="/admin/login">Admin</Link>
+
+      {/* Si no hay usuario, muestra los links normales */}
+      {!user && (
+        <>
+          <span
+            className="navbar-link"
+            style={{ cursor: "pointer", color: "#0ff" }}
+            onClick={() => navigate("/login")}
+          >
+            Iniciar sesión
+          </span>
+          <Link to="/registro">Registrarse</Link>
+        </>
+      )}
+
+      {/* Si hay usuario, reemplaza con menú desplegable de sesión */}
+      {user && (
+        <>
+          <span style={{ marginLeft: "10px" }}>Hola, {user.nombre}</span>
+          <span
+            style={{
+              marginLeft: "10px",
+              color: "#0ff",
+              cursor: "pointer",
+              position: "relative",
+            }}
+            onClick={handleSesionClick}
+          >
+            Sesión ▼
+            {menuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "22px",
+                  left: 0,
+                  background: "#222",
+                  border: "1px solid #0f0",
+                  padding: 5,
+                  zIndex: 10
+                }}
+              >
+                <button onClick={handleLogout}>Cerrar sesión</button>
+              </div>
+            )}
+          </span>
+        </>
+      )}
     </nav>
   );
 }
