@@ -1,83 +1,46 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+require('dotenv').config();
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
-export default function Registro({ setUser }) {
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, apellido, email, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/");
-      } else if (res.status === 409) {
-        setError("El correo ya está registrado.");
-      } else {
-        setError(data.error || "Hubo un error en el registro.");
-      }
-    } catch {
-      setError("Error de conexión");
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const { nombre, apellido, email, password } = req.body;
+  if (!nombre || !apellido || !email || !password) {
+    res.status(400).json({ error: "Faltan datos" });
+    return;
+  }
+
+  try {
+    // Verifica que no exista ese email
+    const existente = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+    if (existente.rows.length > 0) {
+      res.status(409).json({ error: "El correo ya está registrado." });
+      return;
     }
-  };
 
-  return (
-    <form className="cyber-form" onSubmit={handleSubmit}>
-      <div className="cyber-title">Registro</div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Nombre</label>
-        <input
-          className="cyber-input"
-          type="text"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Apellido</label>
-        <input
-          className="cyber-input"
-          type="text"
-          value={apellido}
-          onChange={e => setApellido(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Correo electrónico</label>
-        <input
-          className="cyber-input"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div className="cyber-form-group">
-        <label className="cyber-label">Contraseña</label>
-        <input
-          className="cyber-input"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <button className="cyber-btn" type="submit">Registrar</button>
-      {error && <div className="cyber-error">{error}</div>}
-    </form>
-  );
-}
+    // Hashea la contraseña
+    const hash = await bcrypt.hash(password, 10);
+
+    // Inserta nuevo usuario con rol 'user'
+    const result = await pool.query(
+      `INSERT INTO users (nombre, apellido, email, password_hash, role)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, nombre, apellido, email, role`,
+      [nombre, apellido, email, hash, 'user']
+    );
+
+    const user = result.rows[0];
+    res.status(200).json({ user });
+  } catch (err) {
+    res.status(500).json({ error: "Error en el servidor", details: err.message });
+  }
+};
