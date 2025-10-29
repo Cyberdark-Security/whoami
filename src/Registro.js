@@ -19,6 +19,7 @@ export default function Registro({ setUser }) {
         body: JSON.stringify({ nombre, apellido, email, password })
       });
       const data = await res.json();
+      console.log("Respuesta backend", data, res.status, res.ok);
 
       if (res.ok && data.user) {
         setUser(data.user);
@@ -29,8 +30,9 @@ export default function Registro({ setUser }) {
       } else {
         setError(data.error || "Hubo un error en el registro.");
       }
-    } catch {
+    } catch (err) {
       setError("Error de conexión");
+      console.error("Error durante registro:", err);
     }
   };
 
