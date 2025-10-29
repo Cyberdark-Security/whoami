@@ -24,41 +24,39 @@ export default function Registro({ setUser }) {
       if (res.ok) {
         setUser(data.user);
         setSuccess("¡Registro exitoso!");
-        navigate("/");
+        setTimeout(() => navigate("/"), 1300);
+      } else if (res.status === 400) {
+        setError(data.error || "Los datos no son válidos.");
       } else {
-        setError(data.error || "Error al registrar");
-        if (data.detail) console.log("Backend detail:", data.detail);
+        setError("No se pudo registrar. Intenta de nuevo.");
       }
-    } catch (err) {
+    } catch {
       setError("Error de conexión");
-      console.log("Fetch error:", err);
     }
   };
 
   return (
-    <div>
-      <h2>Registro</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nombre:</label>
-          <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} required />
-        </div>
-        <div>
-          <label>Apellido:</label>
-          <input type="text" value={apellido} onChange={e => setApellido(e.target.value)} required />
-        </div>
-        <div>
-          <label>Correo electrónico:</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Contraseña:</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-        </div>
-        <button type="submit">Registrar</button>
-        {error && <div style={{ color: "#f44", marginTop: 10 }}>{error}</div>}
-        {success && <div style={{ color: "#24D05A", marginTop: 10 }}>{success}</div>}
-      </form>
-    </div>
+    <form className="cyber-form" onSubmit={handleSubmit}>
+      <div className="cyber-title">Registro</div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Nombre</label>
+        <input className="cyber-input" type="text" value={nombre} onChange={e => setNombre(e.target.value)} required />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Apellido</label>
+        <input className="cyber-input" type="text" value={apellido} onChange={e => setApellido(e.target.value)} required />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Correo electrónico</label>
+        <input className="cyber-input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+      </div>
+      <div className="cyber-form-group">
+        <label className="cyber-label">Contraseña</label>
+        <input className="cyber-input" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+      </div>
+      <button className="cyber-btn" type="submit">Registrar</button>
+      {error && <div className="cyber-error">{error}</div>}
+      {success && <div className="cyber-success">{success}</div>}
+    </form>
   );
 }

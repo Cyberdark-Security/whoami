@@ -1,50 +1,81 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+.cyber-form {
+  max-width: 410px;
+  margin: 44px auto 0 auto;
+  background: none;
+}
 
-export default function Login({ setUser }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+.cyber-title {
+  font-family: 'Fira Mono', monospace;
+  color: #44FF44;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 0 28px 0;
+  letter-spacing: 1.6px;
+}
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-        navigate("/");
-      } else if (res.status === 401) {
-        setError("Usuario y/o contraseña incorrectos");
-      } else {
-        setError("Hubo un problema al iniciar sesión. Intenta más tarde.");
-      }
-    } catch {
-      setError("Error de conexión");
-    }
-  };
+.cyber-form-group {
+  margin-bottom: 22px;
+}
 
-  return (
-    <div>
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Correo electrónico:</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Contraseña:</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-        </div>
-        <button type="submit">Entrar</button>
-        {error && <div style={{ color: "#f44", marginTop: 10 }}>{error}</div>}
-      </form>
-    </div>
-  );
+.cyber-label {
+  font-family: 'Fira Mono', monospace;
+  color: #0CE0FF;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.cyber-input {
+  width: 100%;
+  background: #181A20;
+  color: #F4F4F4;
+  border: none;
+  border-bottom: 2px solid #44FF44;
+  font-family: 'Fira Mono', monospace;
+  padding: 9px 0 7px 0;
+  font-size: 1rem;
+  outline: none;
+  transition: border-bottom 0.2s;
+}
+
+.cyber-input:focus {
+  border-bottom: 2px solid #0CE0FF;
+}
+
+.cyber-btn {
+  width: 100%;
+  background: none;
+  color: #44FF44;
+  border: 2px solid #44FF44;
+  font-family: 'Fira Mono', monospace;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 5px;
+  padding: 9px 0;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.18s;
+}
+
+.cyber-btn:hover {
+  color: #181A20;
+  background: #44FF44;
+  border-color: #44FF44;
+}
+
+.cyber-error {
+  margin-top: 6px;
+  color: #ff3366;
+  font-family: 'Fira Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+}
+
+.cyber-success {
+  margin-top: 6px;
+  color: #24D05A;
+  font-family: 'Fira Mono', monospace;
+  font-weight: 600;
 }
