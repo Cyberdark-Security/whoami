@@ -15,9 +15,11 @@ export default function AdminLogin({ onLogin }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.token && data.user) {
         localStorage.setItem("token", data.token);
-        if (onLogin) onLogin(data.user); // opcional, para refrescar UI
+        localStorage.setItem("user", JSON.stringify(data.user));
+        if (onLogin) onLogin(data.user);
+        window.location.reload(); // fuerza refresco para mostrar menú admin
       } else {
         setError(data.error || "Error al iniciar sesión.");
       }

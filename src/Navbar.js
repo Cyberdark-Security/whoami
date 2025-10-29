@@ -1,9 +1,10 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+// identificar si el usuario es admin
 function isAdminLogged() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  return user?.role === 'admin';
+  return user?.role === "admin";
 }
 
 export default function Navbar() {
@@ -11,6 +12,7 @@ export default function Navbar() {
 
   function logoutAdmin() {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/admin");
     window.location.reload();
   }
@@ -39,13 +41,19 @@ export default function Navbar() {
         <Link to="/contacto" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Contacto</Link>
         <Link to="/login" style={{ color: "#0CE0FF", marginRight: 22, fontWeight: 700, textDecoration: "none" }}>Iniciar sesión</Link>
         <Link to="/registro" style={{ color: "#0CE0FF", fontWeight: 700, marginRight: 22, textDecoration: "none" }}>Registrarse</Link>
+        {/* SOLO muestra menu ADMIN si está logueado como admin */}
         {!isAdminLogged() && (
           <Link to="/admin/login" style={{ color: "#24D05A", fontWeight: 700, textDecoration: "none" }}>Admin</Link>
         )}
         {isAdminLogged() && (
           <>
             <Link to="/admin/panel" style={{ color: "#24D05A", fontWeight: 700, marginRight: 14, textDecoration: "none" }}>Panel Admin</Link>
-            <button onClick={logoutAdmin} style={{ color: "#F44336", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>Cerrar admin</button>
+            <button 
+              onClick={logoutAdmin} 
+              style={{ color: "#F44336", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}
+            >
+              Cerrar admin
+            </button>
           </>
         )}
       </div>
