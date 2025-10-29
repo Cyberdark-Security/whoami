@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Login from "./Login";
 import Registro from "./Registro";
 import Home from "./Home";
+import Contacto from "./Contacto"; 
 import Ranking from "./Ranking";
 import Labs from "./Labs";
 import AdminWriteups from "./AdminWriteups";
@@ -32,6 +33,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home user={user} />} />
         <Route path="/ranking" element={<Ranking user={user} />} />
+        <Route path="/writeups" element={<Writeups />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/labs" element={<Labs user={user} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/registro" element={<Registro setUser={setUser} />} />
