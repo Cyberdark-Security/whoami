@@ -57,13 +57,14 @@ module.exports = async (req, res) => {
     let result;
     try {
       result = await pool.query(
-        'INSERT INTO users (nombre, apellido, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, nombre, apellido, email',
-        [nombre, apellido, email, hash]
+       'INSERT INTO users (nombre, apellido, email, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, apellido, email, role',
+        [nombre, apellido, email, hash, 'user']
       );
     } catch (insertErr) {
       res.status(500).json({ error: "Error insertando usuario", flag: "insert_error", detail: insertErr.message });
       return;
     }
+
 
     res.status(201).json({ user: result.rows[0], flag: "registro_ok" });
 
