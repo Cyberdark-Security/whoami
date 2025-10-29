@@ -5,13 +5,20 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: "Método no permitido", flag:"method_error" });
+    res.status(405).json({ error: "Método no permitido", flag: "method_error" });
     return;
   }
 
   const { nombre, apellido, email, password } = req.body;
+  
   if (!nombre || !apellido || !email || !password) {
-    res.status(400).json({ error: "Todos los campos son obligatorios", flag:"missing_fields" });
+    res.status(400).json({ error: "Todos los campos son obligatorios", flag: "missing_fields" });
+    return;
+  }
+
+  // VALIDACIÓN de contraseña: mínimo 6 y no solo espacios
+  if (password.trim().length < 6) {
+    res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres y no solo espacios.", flag: "invalid_password" });
     return;
   }
 
@@ -33,7 +40,7 @@ module.exports = async (req, res) => {
       return;
     }
     if (exists.rows.length > 0) {
-      res.status(400).json({ error: "El correo ya está registrado", flag:"email_exists" });
+      res.status(400).json({ error: "El correo ya está registrado", flag: "email_exists" });
       return;
     }
 
@@ -58,9 +65,9 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(201).json({ user: result.rows[0], flag:"registro_ok" });
+    res.status(201).json({ user: result.rows[0], flag: "registro_ok" });
 
   } catch (err) {
-    res.status(500).json({ error: "Error del servidor", flag:"generic_error", detail: err.message });
+    res.status(500).json({ error: "Error del servidor", flag: "generic_error", detail: err.message });
   }
 };

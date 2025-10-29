@@ -14,6 +14,17 @@ export default function Registro({ setUser }) {
     e.preventDefault();
     setError("");
     setSuccess("");
+    
+    // Validación local antes de enviar al backend
+    if (!nombre || !apellido || !email || !password) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+    if (password.trim().length < 6) {
+      setError("La contraseña debe tener mínimo 6 caracteres y no solo espacios.");
+      return;
+    }
+
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
