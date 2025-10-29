@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Login from "./Login";
 import Registro from "./Registro";
 import Home from "./Home";
+import Writeups from "./Writeups";
 import Contacto from "./Contacto"; 
 import Ranking from "./Ranking";
 import Labs from "./Labs";
