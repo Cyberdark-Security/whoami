@@ -9,11 +9,12 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Consulta que cuenta la cantidad de labs aprobados por cada usuario
+    // Solo usuarios que NO son admins
     const query = `
       SELECT u.id as user_id, u.nombre as username, COUNT(ul.lab_id) as puntos
       FROM users u
       LEFT JOIN user_labs ul ON ul.user_id = u.id AND ul.status = 'aprobado'
+      WHERE u.role IS NULL OR u.role != 'admin'
       GROUP BY u.id, u.nombre
       ORDER BY puntos DESC, u.nombre ASC
     `;
