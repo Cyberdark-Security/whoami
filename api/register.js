@@ -2,9 +2,7 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -19,9 +17,8 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Verifica si ya existe ese correo
     const existe = await pool.query(
-      "SELECT id FROM users WHERE email = $1",
+      'SELECT id FROM users WHERE email = $1',
       [email]
     );
     if (existe.rows.length > 0) {
@@ -29,10 +26,8 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // Hashea la contraseña
     const hash = await bcrypt.hash(password, 10);
 
-    // Inserta usuario (rol por defecto: 'user')
     const result = await pool.query(
       `INSERT INTO users (nombre, apellido, email, password_hash, role)
        VALUES ($1, $2, $3, $4, $5)
@@ -40,9 +35,11 @@ module.exports = async (req, res) => {
       [nombre, apellido, email, hash, 'user']
     );
 
-    // Devuelve el usuario como espera el frontend
+    // Asegúrate de esta línea: ¡debe usar result.rows[0]!
     return res.status(200).json({ user: result.rows[0] });
+
   } catch (err) {
+    // Muestra error sólo si realmente ocurrió un fallo, y como JSON
     res.status(500).json({ error: "Error en el servidor", details: err.message });
   }
 };
