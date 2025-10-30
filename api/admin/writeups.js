@@ -13,7 +13,7 @@ export default function AdminWriteups() {
     fetch("/api/writeups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ writeupId: id, aprobar: aprobado }),
+      body: JSON.stringify({ writeupId: id, aprobar }),
     }).then(() => setWriteups(writeups.filter(w => w.id !== id)));
   };
 
@@ -33,12 +33,8 @@ export default function AdminWriteups() {
                 Ver writeup publicado
               </a>
             </div>
-            <button onClick={() => decidir(w.id, true)} style={{ marginRight: 10, padding: "6px 14px" }}>
-              Aprobar
-            </button>
-            <button onClick={() => decidir(w.id, false)} style={{ color: "#f55", padding: "6px 14px" }}>
-              Rechazar
-            </button>
+            <button style={{ marginRight: 10, padding: "6px 14px" }} onClick={() => decidir(w.id, true)}>Aprobar</button>
+            <button style={{ color: "#f55", padding: "6px 14px" }} onClick={() => decidir(w.id, false)}>Rechazar</button>
           </li>
         ))}
       </ul>

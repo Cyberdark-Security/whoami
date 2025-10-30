@@ -5,8 +5,7 @@ module.exports = async (req, res) => {
   if (req.method === "POST") {
     try {
       const { labId, writeup_url } = req.body;
-      // El user_id debería provenir de sesión/JWT. Aquí lo forzamos para pruebas:
-      let user_id = req.headers["x-user-id"] || req.body.user_id || 1;
+      const user_id = req.headers["x-user-id"] || 1; // Cambia por sesión real
 
       if (!labId || !writeup_url) {
         return res.status(400).json({ error: "Faltan campos" });
