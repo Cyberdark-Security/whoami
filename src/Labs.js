@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 
+// MODAL PARA SUBIR EVIDENCIA, igual que antes
 function ModalUpload({ open, onClose, onSubmit, lab }) {
   const [writeupUrl, setWriteupUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,9 +61,17 @@ function ModalUpload({ open, onClose, onSubmit, lab }) {
 }
 
 export default function Labs({ user }) {
+  const esAdmin = user && user.role === "admin";
   const [labs, setLabs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, lab: null });
+
+  // NUEVO: Estado para formulario admin
+  const [nuevoLab, setNuevoLab] = useState({
+    title: "",
+    megalink: "",
+    fecha: ""
+  });
 
   const recargarLaboratorios = () => {
     setLoading(true);
@@ -78,6 +87,26 @@ export default function Labs({ user }) {
   React.useEffect(() => {
     recargarLaboratorios();
   }, []);
+
+  // NUEVO: Manejadores del form admin
+  const handleNuevoLabChange = e => {
+    setNuevoLab({ ...nuevoLab, [e.target.name]: e.target.value });
+  };
+
+  const handleNuevoLabSubmit = async e => {
+    e.preventDefault();
+    await fetch("/api/labs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: nuevoLab.title,
+        megalink: nuevoLab.megalink,
+        fecha: nuevoLab.fecha
+      })
+    });
+    setNuevoLab({ title: "", megalink: "", fecha: "" });
+    recargarLaboratorios();
+  };
 
   const enviarEvidencia = async ({ labId, writeup_url }) => {
     await fetch("/api/evidencias", {
@@ -111,6 +140,60 @@ export default function Labs({ user }) {
         Laboratorios Dockerizados de Pentesting
       </h1>
 
+      {/* FORMULARIO SOLO ADMIN */}
+      {esAdmin && (
+        <form onSubmit={handleNuevoLabSubmit} style={{
+          background: "#191a1f",
+          border: "2px solid #39ff14",
+          borderRadius: 12,
+          marginBottom: 30,
+          padding: 30,
+          display: "flex",
+          flexDirection: "column"
+        }}>
+          <h2 style={{ color: "#39ff14" }}>Agregar laboratorio nuevo</h2>
+          <input
+            style={{margin:"6px 0", width:"94%", padding:8}}
+            name="title"
+            placeholder="Título o nombre"
+            value={nuevoLab.title}
+            onChange={handleNuevoLabChange}
+            required
+          />
+          <input
+            style={{margin:"6px 0", width:"94%", padding:8}}
+            name="fecha"
+            placeholder="Fecha (YYYY-MM-DD)"
+            type="date"
+            value={nuevoLab.fecha}
+            onChange={handleNuevoLabChange}
+            required
+          />
+          <input
+            style={{margin:"6px 0", width:"94%", padding:8}}
+            name="megalink"
+            placeholder="Link de descarga .zip/.rar/.ova"
+            value={nuevoLab.megalink}
+            onChange={handleNuevoLabChange}
+            required
+          />
+          <button
+            style={{
+              backgroundColor: "#39ff14",
+              border: "none",
+              padding: "10px 26px",
+              borderRadius: 4,
+              fontWeight: 700,
+              marginTop: 6,
+              fontFamily: "monospace"
+            }}
+            type="submit"
+          >
+            Subir laboratorio
+          </button>
+        </form>
+      )}
+
       {labs.length === 0 && <p style={{ color: "#fbd" }}>No hay laboratorios publicados.</p>}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
@@ -140,7 +223,7 @@ export default function Labs({ user }) {
               fontSize: "1.05em",
               marginBottom: "12px"
             }}>
-              Publicado: {new Date(l.created_at).toLocaleDateString()}
+              Publicado: {l.created_at ? new Date(l.created_at).toLocaleDateString() : l.fecha}
             </div>
             <div style={{ display: "flex", gap: "16px" }}>
               <a
