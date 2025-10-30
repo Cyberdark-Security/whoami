@@ -53,7 +53,12 @@ export default function Navbar({ user, setUser }) {
         <Link to="/ranking" style={{ color: "#00ffff", textDecoration: "none" }}>Ranking</Link>
         <Link to="/writeups" style={{ color: "#00ffff", textDecoration: "none" }}>Writeups</Link>
         <Link to="/contacto" style={{ color: "#00ffff", textDecoration: "none" }}>Contacto</Link>
-        <Link to="/admin/login" style={{ color: "#39ff14", textDecoration: "none" }}>Admin</Link>
+        {/* Muestra Admin SOLO si user.role === "admin" */}
+        {user && user.role === "admin" && (
+          <Link to="/admin/panel" style={{ color: "#39ff14", textDecoration: "none", fontWeight:900 }}>
+            Admin
+          </Link>
+        )}
         {!user && (
           <>
             <span 
