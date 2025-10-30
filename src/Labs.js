@@ -1,11 +1,83 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-// Simula la función para enviar writeup o evidencia, cámbiala según tu backend
-const enviarEvidencia = labId => alert(`Subir evidencia para lab ${labId}`);
+// ModalUpload: formulario popup para enviar evidencia
+function ModalUpload({ open, onClose, onSubmit, lab }) {
+  const fileRef = useRef();
+  const [texto, setTexto] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setTexto("");
+      setMensaje("");
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const handleSend = async e => {
+    e.preventDefault();
+    setLoading(true);
+    setMensaje("");
+    const formData = new FormData();
+    formData.append("labId", lab.id);
+    formData.append("texto", texto);
+    if (fileRef.current.files[0]) {
+      formData.append("archivo", fileRef.current.files[0]);
+    }
+    await onSubmit(formData);
+    setLoading(false);
+    setMensaje("¡Enviado correctamente!");
+    setTimeout(() => { setMensaje(""); onClose(); }, 1200);
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000
+    }}>
+      <form onSubmit={handleSend} style={{
+        background: "#191b24",
+        border: "2.5px solid #39ff14",
+        borderRadius: 14,
+        padding: "2em 2.5em",
+        boxShadow: "0 8px 30px #0306",
+        minWidth: 320,
+        minHeight: 130,
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px"
+      }}>
+        <div style={{ color: "#39ff14", fontWeight: "bold", fontSize: "1.15em", marginBottom: 2 }}>
+          Enviar evidencia para:<br/><span style={{color:"#fff"}}>{lab.title}</span>
+        </div>
+        <label style={{color: "#fff"}}>Writeup / Evidencia:
+          <textarea style={{ display: "block", width: "100%", borderRadius: 5, minHeight:60, marginTop:4 }}
+            value={texto} onChange={e=>setTexto(e.target.value)} required placeholder="Describe solución, pasos, flags, etc..."
+          />
+        </label>
+        <label style={{color: "#fff"}}>Archivo adjunto (opcional):
+          <input type="file" ref={fileRef} style={{ marginTop: 2 }} />
+        </label>
+        <div style={{ display:"flex", gap:"1em", marginTop:8 }}>
+          <button type="button" onClick={onClose} style={{
+            background: "#111a", color: "#fff", borderRadius:5, border:"none", padding:"7px 14px"
+          }}>Cancelar</button>
+          <button type="submit" disabled={loading} style={{
+            background: "#39ff14", color:"#111", border:"none", fontWeight:"bold", borderRadius:6, padding:"8px 18px"
+          }}>{loading ? "Enviando..." : "Enviar"}</button>
+        </div>
+        {mensaje && <div style={{ color: "#39ff14" }}>{mensaje}</div>}
+      </form>
+    </div>
+  );
+}
 
 export default function Labs({ user }) {
   const [labs, setLabs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState({ open: false, lab: null });
 
   const recargarLaboratorios = () => {
     setLoading(true);
@@ -21,6 +93,13 @@ export default function Labs({ user }) {
   useEffect(() => {
     recargarLaboratorios();
   }, []);
+
+  // Simula POST, reemplaza por tu fetch real
+  const enviarEvidencia = async formData => {
+    // Ejemplo de request real:
+    // await fetch("/api/evidencias", { method: "POST", body: formData })
+    await new Promise(r => setTimeout(r, 600)); // demo
+  };
 
   if (loading) return <div style={{ color: "#39ff14" }}>Cargando laboratorios...</div>;
 
@@ -96,10 +175,9 @@ export default function Labs({ user }) {
                 }}>
                 Descargar
               </a>
-              {/* Mostrar solo si hay usuario logueado */}
               {user && (
                 <button
-                  onClick={() => enviarEvidencia(l.id)}
+                  onClick={() => setModal({ open: true, lab: l })}
                   style={{
                     background: "#71ff84",
                     color: "#21242a",
@@ -119,6 +197,12 @@ export default function Labs({ user }) {
           </section>
         ))}
       </div>
+      <ModalUpload
+        open={modal.open}
+        lab={modal.lab || {}}
+        onClose={() => setModal({ open: false, lab: null })}
+        onSubmit={enviarEvidencia}
+      />
     </main>
   );
 }
