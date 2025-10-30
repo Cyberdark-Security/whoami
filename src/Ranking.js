@@ -1,56 +1,37 @@
 import React, { useEffect, useState } from "react";
-
 export default function Ranking() {
   const [ranking, setRanking] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   useEffect(() => {
-    fetchRanking();
+    fetch("/api/ranking")
+      .then(r => r.json())
+      .then(data => setRanking(data.ranking || []));
   }, []);
-
-  async function fetchRanking() {
-    try {
-      setLoading(true);
-      setError("");
-      // Reemplaza esta URL con la de tu API real que devuelve ranking
-      const res = await fetch('/api/ranking');
-      if (!res.ok) throw new Error("Error cargando ranking");
-      const data = await res.json();
-      setRanking(data.ranking);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) return <p>Cargando ranking...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-
   return (
-    <div style={{ maxWidth: 700, margin: "24px auto", fontFamily: "'Fira Mono', monospace", color: "#44FF44" }}>
-      <h1>Ranking de Usuarios</h1>
+    <section style={{ margin: "3em auto", maxWidth: 600 }}>
+      <h2 style={{
+        color: "#39ff14", fontSize: "2.2em", fontFamily: "monospace", fontWeight:900
+      }}>
+        Ranking de Usuarios
+      </h2>
       <table style={{
-        width: '100%',
-        borderCollapse: 'collapse',
-        color: '#44FF44'
+        width: "100%", background: "#23272f", color: "#fff",
+        borderRadius: 8, overflow: "hidden", fontFamily:"monospace", fontSize:"1.2em"
       }}>
         <thead>
-          <tr style={{ borderBottom: "2px solid #24D05A" }}>
-            <th style={{ textAlign: 'left', padding: '8px' }}>Usuario</th>
-            <th style={{ textAlign: 'center', padding: '8px' }}>Puntos</th>
+          <tr style={{ background: "#18191b" }}>
+            <th style={{ color: "#39ff14", textAlign:"left", padding:"0 1em" }}>Usuario</th>
+            <th style={{ color: "#39ff14", textAlign:"center" }}>Puntos</th>
           </tr>
         </thead>
         <tbody>
-          {ranking.map(({ user_id, username, puntos }) => (
-            <tr key={user_id} style={{ borderBottom: "1px solid #0CE0FF50" }}>
-              <td style={{ padding: '10px 8px' }}>{username}</td>
-              <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 'bold' }}>{puntos}</td>
+          {ranking.map((u, i) => (
+            <tr key={u.user_id} style={{borderBottom:"1px solid #39ff1480"}}>
+              <td style={{padding:"0 1em"}}>{u.username}</td>
+              <td style={{textAlign:"center"}}>{u.puntos}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
