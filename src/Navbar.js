@@ -6,11 +6,21 @@ export default function Navbar({ user, setUser }) {
   const navigate = useNavigate();
 
   function handleLogout() {
-    setUser(null);
-    localStorage.removeItem("user");
-    setMenuOpen(false);
-    navigate("/");
-  }
+  // ✅ Limpiar TODO localStorage
+  localStorage.clear();  // O uno por uno:
+  // localStorage.removeItem("token");
+  // localStorage.removeItem("role");
+  // localStorage.removeItem("user");
+  // localStorage.removeItem("admin_token");
+  // localStorage.removeItem("admin_user");
+  
+  // Actualizar estado
+  setUser(null);
+  setMenuOpen(false);
+  
+  // Navegar al inicio
+  navigate("/");
+}
 
   function handleSesionClick() {
     if (user) {
