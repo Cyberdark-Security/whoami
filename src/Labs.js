@@ -39,7 +39,7 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
         return;
       }
 
-      const res = await fetch("/api/admin/submit-writeup", {
+      const res = await fetch("/api/submit-writeup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
