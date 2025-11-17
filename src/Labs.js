@@ -187,7 +187,11 @@ export default function Labs({ user }) {
       
       // ✅ MANEJO FLEXIBLE - funciona con ambos formatos
       const labsList = Array.isArray(data) ? data : (data.labs || []);
-      setLabs(labsList);
+      
+      // ✅ ORDENAR POR ID (ASCENDENTE) - Los labs nuevos van al final
+      const sortedLabs = labsList.sort((a, b) => a.id - b.id);
+      
+      setLabs(sortedLabs);
     } catch (err) {
       console.error("❌ Error cargando labs:", err);
       setLabs([]);
