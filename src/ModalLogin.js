@@ -28,8 +28,9 @@ export default function ModalLogin({ onLogin, onCancel }) {
 
       if (res.ok && data.token) {
         // Guardar token (NO la contraseña)
-        localStorage.setItem("admin_token", data.token);
-        localStorage.setItem("admin_user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);          // ← MISMO QUE Login.js
+        localStorage.setItem("role", data.user.role);       // ← MISMO QUE Login.js
+        localStorage.setItem("user", JSON.stringify(data.user));
         
         // Limpiar campos
         setEmail("");
