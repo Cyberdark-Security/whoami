@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
           w.user_id,
           w.evidence,
           w.submitted_at,
-          w.estado,
+          w.status,
           u.nombre,
           u.apellido,
           u.email,
@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
          FROM writeups w
          JOIN users u ON w.user_id = u.id
          JOIN labs l ON w.lab_id = l.id
-         WHERE w.estado = 'pendiente'
+         WHERE w.status = 'pendiente'
          ORDER BY w.submitted_at DESC`
       );
 
