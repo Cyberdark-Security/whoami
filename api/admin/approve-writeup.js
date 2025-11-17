@@ -4,10 +4,16 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
+
+// 🎯 Sistema de puntos personalizado
+const POINTS_BY_DIFFICULTY = {
+  'fácil': 1,
+  'medio': 2,
+  'difícil': 5,
+  'insano': 8
+};
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -31,29 +37,52 @@ module.exports = async (req, res) => {
       });
     }
 
-    // ✅ SIN verified_by (o usa el ID del admin real)
-    const query = `
+    // 1️⃣ Actualizar writeup
+    const updateWriteupQuery = `
       UPDATE user_labs 
-      SET status = $1, 
-          verified_at = NOW()
+      SET status = $1, verified_at = NOW()
       WHERE id = $2
-      RETURNING *;
+      RETURNING user_id, lab_id;
     `;
 
-    const result = await pool.query(query, [status.toLowerCase(), user_lab_id]);
-
-    if (result.rows.length === 0) {
+    const writeupResult = await pool.query(updateWriteupQuery, [status.toLowerCase(), user_lab_id]);
+    
+    if (writeupResult.rows.length === 0) {
       return res.status(404).json({ 
         error: "Writeup no encontrado" 
       });
     }
 
-    console.log(`✅ [API] Writeup ${status}:`, result.rows[0].id);
+    const { user_id, lab_id } = writeupResult.rows[0];
+
+    // 2️⃣ Si está APROBADO, sumar puntos según dificultad
+    if (status.toLowerCase() === 'aprobado') {
+      // Obtener dificultad de la máquina
+      const labQuery = `
+        SELECT difficulty FROM labs WHERE id = $1
+      `;
+      const labResult = await pool.query(labQuery, [lab_id]);
+      
+      if (labResult.rows.length > 0) {
+        const difficulty = (labResult.rows[0].difficulty || 'medio').toLowerCase();
+        const points = POINTS_BY_DIFFICULTY[difficulty] || 2;
+
+        // Actualizar puntos del usuario
+        const updatePointsQuery = `
+          UPDATE users 
+          SET puntos = COALESCE(puntos, 0) + $1
+          WHERE id = $2;
+        `;
+        
+        await pool.query(updatePointsQuery, [points, user_id]);
+        
+        console.log(`✅ [API] Usuario ${user_id} ganó ${points} puntos (${difficulty})`);
+      }
+    }
 
     return res.status(200).json({ 
       success: true,
-      message: `Writeup ${status} exitosamente`,
-      data: result.rows[0]
+      message: `Writeup ${status} exitosamente`
     });
 
   } catch (error) {
