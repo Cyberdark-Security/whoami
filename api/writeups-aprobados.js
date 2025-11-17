@@ -3,7 +3,7 @@ require('dotenv').config();
 const { Pool } = require("pg");
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // o tus datos sueltos
+  connectionString: process.env.DATABASE_URL,
 });
 
 module.exports = async (req, res) => {
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       FROM user_labs ul
       JOIN users u ON ul.user_id = u.id
       JOIN labs l ON ul.lab_id = l.id
-      WHERE ul.status = 'Aprobado'
+      WHERE ul.status = 'aprobado'
       ORDER BY ul.submitted_at DESC
     `);
     res.status(200).json({ writeups: resultado.rows });
