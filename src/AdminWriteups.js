@@ -1,74 +1,197 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import "../styles/AdminWriteups.css";
 
 export default function AdminWriteups() {
   const [writeups, setWriteups] = useState([]);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedWriteup, setSelectedWriteup] = useState(null);
+  const [approving, setApproving] = useState(false);
+  const [error, setError] = useState("");
 
-  // Cargar writeups pendientes al montar
   useEffect(() => {
     fetchPendingWriteups();
   }, []);
 
-  async function fetchPendingWriteups() {
+  const fetchPendingWriteups = async () => {
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token"); // Token del admin, guardado al login
-      const res = await fetch('/api/admin/writeups-pending', {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!res.ok) throw new Error("Error cargando writeups");
+      console.log("🔄 Obteniendo writeups pendientes...");
+      const res = await fetch("/api/admin/writeups-pending");
       const data = await res.json();
-      setWriteups(data.writeups);
+      
+      console.log("📊 Respuesta del servidor:", data);
+
+      if (data.writeups && Array.isArray(data.writeups)) {
+        setWriteups(data.writeups);
+        console.log(`✅ ${data.writeups.length} writeups encontrados`);
+      } else {
+        console.warn("⚠️ No hay writeups en la respuesta");
+        setWriteups([]);
+      }
     } catch (err) {
-      setError(err.message);
+      console.error("❌ Error fetching:", err);
+      setError("Error cargando writeups");
+      setWriteups([]);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function handleVerify(userLabId, approve) {
-    setError("");
+  const handleApprove = async (user_lab_id, approvalStatus) => {
+    if (!window.confirm(`¿Seguro que deseas ${approvalStatus} este writeup?`)) {
+      return;
+    }
+
+    setApproving(true);
     try {
-      const token = localStorage.getItem("token"); // Token del admin
-      const res = await fetch('/api/admin/approve-writeup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+      const res = await fetch("/api/admin/approve-writeup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_lab_id: userLabId,
-          approve
+          user_lab_id,
+          status: approvalStatus
         })
       });
-      if (!res.ok) throw new Error("Error al verificar");
-      await fetchPendingWriteups();
+
+      if (res.ok) {
+        // Remover del estado local
+        setWriteups(writeups.filter(w => w.id !== user_lab_id));
+        setSelectedWriteup(null);
+        alert(`✅ Writeup ${approvalStatus}`);
+        // Recargar lista
+        fetchPendingWriteups();
+      } else {
+        const error = await res.json();
+        alert(`❌ Error: ${error.error}`);
+      }
     } catch (err) {
-      setError(err.message);
+      console.error("Error:", err);
+      alert("❌ Error al procesar");
+    } finally {
+      setApproving(false);
     }
+  };
+
+  if (loading) {
+    return <div className="admin-loading">⏳ Cargando writeups...</div>;
   }
 
-  if (loading) return <p>Cargando writeups pendientes...</p>;
-
   return (
-    <div style={{ maxWidth: 700, margin: "24px auto", fontFamily: "'Fira Mono', monospace", color: "#44FF44" }}>
-      <h1>Revisión de Writeups Pendientes</h1>
-      {error && <p style={{ color: "#f33" }}>{error}</p>}
-      {writeups.length === 0 && <p>No hay writeups pendientes.</p>}
-      {writeups.map(w => (
-        <section key={w.id} style={{ background: "#23272F", padding: 20, marginBottom: 16, borderLeft: "6px solid #44FF44", borderRadius: 6 }}>
-          <p><b>Usuario:</b> {w.usuario}</p>
-          <p><b>Laboratorio:</b> {w.lab_title}</p>
-          <p><b>Evidencia:</b> {w.evidence}</p>
-          <p><b>Fecha de envío:</b> {new Date(w.submitted_at).toLocaleString()}</p>
-          <button style={{ marginRight: 12, cursor: "pointer", backgroundColor: "#24D05A", border: "none", padding: "6px 16px", borderRadius: 4, fontWeight: "bold" }}
-            onClick={() => handleVerify(w.id, true)}>Aprobar</button>
-          <button style={{ cursor: "pointer", backgroundColor: "#F44336", border: "none", padding: "6px 16px", borderRadius: 4, fontWeight: "bold" }}
-            onClick={() => handleVerify(w.id, false)}>Rechazar</button>
-        </section>
-      ))}
+    <div className="admin-writeups">
+      <h2>📋 Revisión de Writeups Pendientes</h2>
+
+      {/* MOSTR AR ERROR SI LO HAY */}
+      {error && (
+        <div style={{
+          background: "rgba(255,0,0,0.1)",
+          border: "1px solid #ff0000",
+          color: "#ff6666",
+          padding: 15,
+          borderRadius: 4,
+          marginBottom: 20
+        }}>
+          ❌ {error}
+        </div>
+      )}
+
+      {writeups.length === 0 ? (
+        <div className="no-writeups">
+          ✅ No hay writeups pendientes por revisar
+        </div>
+      ) : (
+        <div className="writeups-container">
+          {/* Lista de writeups */}
+          <div className="writeups-list">
+            {writeups.map(w => (
+              <div
+                key={w.id}
+                className={`writeup-item ${selectedWriteup?.id === w.id ? 'active' : ''}`}
+                onClick={() => setSelectedWriteup(w)}
+              >
+                <div className="writeup-header">
+                  <h3>{w.lab_title}</h3>
+                  <span className="status-badge">{w.status}</span>
+                </div>
+                <p className="writeup-author">
+                  👤 {w.nombre} {w.apellido}
+                </p>
+                <p className="writeup-date">
+                  📅 {new Date(w.submitted_at).toLocaleDateString('es-ES')}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Detalle y acciones */}
+          {selectedWriteup && (
+            <div className="writeup-detail">
+              <h3>📝 {selectedWriteup.lab_title}</h3>
+
+              <div className="detail-section">
+                <label>👤 Usuario:</label>
+                <p>
+                  {selectedWriteup.nombre} {selectedWriteup.apellido}
+                  <br />
+                  <small>{selectedWriteup.email}</small>
+                </p>
+              </div>
+
+              <div className="detail-section">
+                <label>📅 Fecha de envío:</label>
+                <p>
+                  {new Date(selectedWriteup.submitted_at).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+
+              <div className="detail-section">
+                <label>📄 Evidencia / Writeup:</label>
+                <div className="evidence-container">
+                  {selectedWriteup.evidence && selectedWriteup.evidence.startsWith('http') ? (
+                    <a 
+                      href={selectedWriteup.evidence} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="evidence-link"
+                    >
+                      🔗 Ver evidencia externa
+                    </a>
+                  ) : (
+                    <p className="evidence-text">{selectedWriteup.evidence}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="actions">
+                <button
+                  className="btn btn-approve"
+                  onClick={() => handleApprove(selectedWriteup.id, 'aprobado')}
+                  disabled={approving}
+                >
+                  ✅ Aprobar
+                </button>
+                <button
+                  className="btn btn-reject"
+                  onClick={() => handleApprove(selectedWriteup.id, 'rechazado')}
+                  disabled={approving}
+                >
+                  ❌ Rechazar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="info-banner">
+        <p>Total pendientes: <strong>{writeups.length}</strong></p>
+      </div>
     </div>
   );
 }
