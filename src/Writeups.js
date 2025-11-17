@@ -63,9 +63,9 @@ export default function Writeups() {
               <tr key={w.id} style={{ borderBottom: "1px solid #333" }}>
                 <td style={{ padding: "1em" }}>{w.lab_title || "Sin título"}</td>
                 <td style={{ padding: "1em" }}>{w.nombre} {w.apellido}</td>
-                <td style={{ padding: "1em" }}>{w.descripcion || "Sin descripción"}</td>
+                <td style={{ padding: "1em" }}>{w.texto || "Sin descripción"}</td>
                 <td style={{ padding: "1em" }}>
-                  {new Date(w.submitted_at).toLocaleDateString()}
+                  {new Date(w.fecha_envio).toLocaleDateString()}
                 </td>
               </tr>
             ))}
