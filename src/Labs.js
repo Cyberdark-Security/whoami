@@ -22,7 +22,6 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
     setError("");
     setMensaje("");
 
-    // Validar URL
     if (!writeupUrl.match(/^https?:\/\/.+/)) {
       setError("❌ Ingresa una URL válida (https://...)");
       return;
@@ -31,7 +30,6 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
     setLoading(true);
 
     try {
-      // Obtener user_id del localStorage
       const userStr = localStorage.getItem("user");
       const userObj = userStr ? JSON.parse(userStr) : null;
 
@@ -41,7 +39,6 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
         return;
       }
 
-      // Enviar al backend
       const res = await fetch("/api/admin/submit-writeup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,12 +85,10 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
           Publicar writeup para: <span style={{ color: "#fff" }}>{lab.title}</span>
         </div>
 
-        {/* Usuario info */}
         <label style={{ color: "#fff", display: "block", marginBottom: 10, fontSize: 12 }}>
           👤 Usuario: <strong>{user ? (user.username || user.nombre) : "Desconocido"}</strong>
         </label>
 
-        {/* URL input */}
         <label style={{ color: "#fff", display: "block", marginBottom: 10 }}>
           Link al writeup (Notion, GDrive, Blog, etc):
           <input
@@ -110,7 +105,6 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
           />
         </label>
 
-        {/* Mensaje error */}
         {error && (
           <div style={{
             marginBottom: 10, padding: 8, borderRadius: 4,
@@ -121,7 +115,6 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
           </div>
         )}
 
-        {/* Botones */}
         <div style={{ display: "flex", gap: "1em", marginTop: 14 }}>
           <button
             type="button"
@@ -145,12 +138,22 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
           </button>
         </div>
 
-        {/* Mensaje success */}
         {mensaje && <div style={{ color: "#39ff14", marginTop: 12, fontSize: 13 }}>{mensaje}</div>}
       </form>
     </div>
   );
 }
+
+// Función para obtener color por dificultad
+const getDifficultyStyle = (difficulty) => {
+  const styles = {
+    'fácil': { background: '#4CAF50', color: '#fff' },
+    'medio': { background: '#FF9800', color: '#fff' },
+    'difícil': { background: '#F44336', color: '#fff' },
+    'insano': { background: '#9C27B0', color: '#fff' }
+  };
+  return styles[difficulty?.toLowerCase()] || { background: '#999', color: '#fff' };
+};
 
 export default function Labs({ user }) {
   const esAdmin = user && user.role === "admin";
@@ -158,11 +161,11 @@ export default function Labs({ user }) {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, lab: null });
 
-  // Estado para formulario admin
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
-    megalink: "",
-    fecha: ""
+    download_link: "",
+    published_date: "",
+    difficulty: "fácil"
   });
 
   const recargarLaboratorios = () => {
@@ -173,39 +176,50 @@ export default function Labs({ user }) {
         setLabs(data.labs || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(err => {
+        console.error("Error cargando labs:", err);
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
     recargarLaboratorios();
   }, []);
 
-  // Manejadores del form admin
   const handleNuevoLabChange = e => {
     setNuevoLab({ ...nuevoLab, [e.target.name]: e.target.value });
   };
 
   const handleNuevoLabSubmit = async e => {
     e.preventDefault();
-    await fetch("/api/labs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: nuevoLab.title,
-        megalink: nuevoLab.megalink,
-        fecha: nuevoLab.fecha
-      })
-    });
-    setNuevoLab({ title: "", megalink: "", fecha: "" });
-    recargarLaboratorios();
+    try {
+      const res = await fetch("/api/admin/add-lab", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: nuevoLab.title,
+          published_date: nuevoLab.published_date,
+          download_link: nuevoLab.download_link,
+          difficulty: nuevoLab.difficulty
+        })
+      });
+      
+      if (res.ok) {
+        setNuevoLab({ title: "", download_link: "", published_date: "", difficulty: "fácil" });
+        recargarLaboratorios();
+        alert("✅ Laboratorio agregado exitosamente");
+      } else {
+        const error = await res.json();
+        alert(`❌ Error: ${error.error}`);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("❌ Error al agregar laboratorio");
+    }
   };
 
-  // Manejador de evidencia (ahora solo recarga si es necesario)
   const enviarEvidencia = async ({ labId, writeup_url }) => {
     console.log(`✅ Writeup enviado para lab ${labId}`);
-    // La BD ya está actualizada desde el modal
-    // Puedes recargar labs si lo necesitas
-    // recargarLaboratorios();
   };
 
   if (loading) return <div style={{ color: "#39ff14" }}>Cargando laboratorios...</div>;
@@ -243,31 +257,48 @@ export default function Labs({ user }) {
           flexDirection: "column"
         }}>
           <h2 style={{ color: "#39ff14" }}>Agregar laboratorio nuevo</h2>
+          
           <input
-            style={{ margin: "6px 0", width: "94%", padding: 8 }}
+            style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
             name="title"
             placeholder="Título o nombre"
             value={nuevoLab.title}
             onChange={handleNuevoLabChange}
             required
           />
+          
           <input
-            style={{ margin: "6px 0", width: "94%", padding: 8 }}
-            name="fecha"
-            placeholder="Fecha (YYYY-MM-DD)"
+            style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
+            name="published_date"
+            placeholder="Fecha de publicación"
             type="date"
-            value={nuevoLab.fecha}
+            value={nuevoLab.published_date}
             onChange={handleNuevoLabChange}
             required
           />
+          
           <input
-            style={{ margin: "6px 0", width: "94%", padding: 8 }}
-            name="megalink"
+            style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
+            name="download_link"
             placeholder="Link de descarga .zip/.rar/.ova"
-            value={nuevoLab.megalink}
+            value={nuevoLab.download_link}
             onChange={handleNuevoLabChange}
             required
           />
+
+          <select
+            style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
+            name="difficulty"
+            value={nuevoLab.difficulty}
+            onChange={handleNuevoLabChange}
+            required
+          >
+            <option value="fácil">🟢 Fácil</option>
+            <option value="medio">🟠 Medio</option>
+            <option value="difícil">🔴 Difícil</option>
+            <option value="insano">🟣 Insano</option>
+          </select>
+
           <button
             style={{
               backgroundColor: "#39ff14",
@@ -276,7 +307,8 @@ export default function Labs({ user }) {
               borderRadius: 4,
               fontWeight: 700,
               marginTop: 6,
-              fontFamily: "monospace"
+              fontFamily: "monospace",
+              cursor: "pointer"
             }}
             type="submit"
           >
@@ -299,26 +331,43 @@ export default function Labs({ user }) {
               marginBottom: 0,
               fontFamily: "monospace"
             }}>
-            <div style={{
-              color: "#71e35b",
-              fontSize: "2em",
-              fontWeight: 800,
-              marginBottom: "8px",
-              letterSpacing: "1px"
-            }}>
-              {`Lab ${idx + 1}: ${l.title}`}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div style={{
+                color: "#71e35b",
+                fontSize: "2em",
+                fontWeight: 800,
+                letterSpacing: "1px"
+              }}>
+                {`Lab ${idx + 1}: ${l.title}`}
+              </div>
+              {/* BADGE DE DIFICULTAD */}
+              {l.difficulty && (
+                <div style={{
+                  ...getDifficultyStyle(l.difficulty),
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontWeight: "bold",
+                  fontSize: "0.9em",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px"
+                }}>
+                  {l.difficulty}
+                </div>
+              )}
             </div>
+
             <div style={{
               fontWeight: "bold",
               color: "#b8ffcb",
               fontSize: "1.05em",
               marginBottom: "12px"
             }}>
-              Publicado: {l.created_at ? new Date(l.created_at).toLocaleDateString() : l.fecha}
+              Publicado: {l.created_at ? new Date(l.created_at).toLocaleDateString() : "N/A"}
             </div>
+
             <div style={{ display: "flex", gap: "16px" }}>
               <a
-                href={l.megalink}
+                href={l.download_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
