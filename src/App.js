@@ -8,6 +8,7 @@ import Writeups from "./Writeups";
 import Contacto from "./Contacto"; 
 import Ranking from "./Ranking";
 import Labs from "./Labs";
+import AdminPanel from './admin/panel';
 import AdminWriteups from "./AdminWriteups";
 import AdminLogin from "./AdminLogin";
 
@@ -39,6 +40,7 @@ function App() {
         <Route path="/labs" element={<Labs user={user} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/registro" element={<Registro setUser={setUser} />} />
+        <Route path="/admin/panel" element={<AdminPanel />} />
         <Route
           path="/admin/login"
           element={<AdminLogin onLogin={handleAdminLogin} />}

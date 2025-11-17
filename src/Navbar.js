@@ -22,13 +22,13 @@ export default function Navbar({ user, setUser }) {
 
   return (
     <nav style={{
-        width: '100%',
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 2vw",
-        borderBottom: "2px solid #39ff14",
-        fontFamily: 'Fira Mono, monospace'
+      width: '100%',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0 2vw",
+      borderBottom: "2px solid #39ff14",
+      fontFamily: 'Fira Mono, monospace'
     }}>
       {/* IZQUIERDA */}
       <div style={{ display: "flex", alignItems: "center" }}>
@@ -42,6 +42,7 @@ export default function Navbar({ user, setUser }) {
           WHOAMI
         </Link>
       </div>
+
       {/* DERECHA */}
       <div style={{
         display: "flex",
@@ -49,16 +50,35 @@ export default function Navbar({ user, setUser }) {
         gap: "18px",
         fontWeight: "bold"
       }}>
-        <Link to="/labs" style={{ color: "#00ffff", textDecoration: "none" }}>Laboratorios</Link>
-        <Link to="/ranking" style={{ color: "#00ffff", textDecoration: "none" }}>Ranking</Link>
-        <Link to="/writeups" style={{ color: "#00ffff", textDecoration: "none" }}>Writeups</Link>
-        <Link to="/contacto" style={{ color: "#00ffff", textDecoration: "none" }}>Contacto</Link>
-        {/* Muestra Admin SOLO si user.role === "admin" */}
+        <Link to="/labs" style={{ color: "#00ffff", textDecoration: "none" }}>
+          Laboratorios
+        </Link>
+        <Link to="/ranking" style={{ color: "#00ffff", textDecoration: "none" }}>
+          Ranking
+        </Link>
+        <Link to="/writeups" style={{ color: "#00ffff", textDecoration: "none" }}>
+          Writeups
+        </Link>
+        <Link to="/contacto" style={{ color: "#00ffff", textDecoration: "none" }}>
+          Contacto
+        </Link>
+
+        {/* ⚙️ BOTÓN ADMIN - SOLO PARA ADMINS */}
         {user && user.role === "admin" && (
-          <Link to="/admin/panel" style={{ color: "#39ff14", textDecoration: "none", fontWeight:900 }}>
-            Admin
+          <Link 
+            to="/admin/panel" 
+            style={{ 
+              color: "#39ff14", 
+              textDecoration: "none", 
+              fontWeight: 900,
+              fontSize: "1.1em"
+            }}
+          >
+            ⚙️ Admin
           </Link>
         )}
+
+        {/* LOGIN / REGISTRO - SI NO ESTÁ LOGUEADO */}
         {!user && (
           <>
             <span 
@@ -67,14 +87,25 @@ export default function Navbar({ user, setUser }) {
             >
               Iniciar sesión
             </span>
-            <Link to="/registro" style={{color: "#00ffff", marginLeft: "6px", textDecoration:"none"}}>
+            <Link 
+              to="/registro" 
+              style={{
+                color: "#00ffff", 
+                marginLeft: "6px", 
+                textDecoration: "none"
+              }}
+            >
               Registrarse
             </Link>
           </>
         )}
+
+        {/* MENÚ SESIÓN - SI ESTÁ LOGUEADO */}
         {user && (
           <>
-            <span style={{marginLeft: "12px", color: "#fff"}}>Hola, {user.nombre}</span>
+            <span style={{ marginLeft: "12px", color: "#fff" }}>
+              Hola, {user.nombre}
+            </span>
             <span
               style={{
                 color: "#00ffff",
