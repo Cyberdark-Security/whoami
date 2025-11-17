@@ -33,28 +33,39 @@ export default function Login({ setUser }) {
   return (
     <form className="cyber-form" onSubmit={handleSubmit}>
       <div className="cyber-title">Login</div>
+      
+      {/* ✅ CORRECIÓN: Agregar label + id + name */}
       <div className="cyber-form-group">
-        <label className="cyber-label">Correo electrónico</label>
+        <label htmlFor="email-input" className="cyber-label">Correo electrónico</label>
         <input
+          id="email-input"
+          name="email"
           className="cyber-input"
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
+          aria-label="Correo electrónico"
         />
       </div>
+
+      {/* ✅ CORRECIÓN: Agregar label + id + name */}
       <div className="cyber-form-group">
-        <label className="cyber-label">Contraseña</label>
+        <label htmlFor="password-input" className="cyber-label">Contraseña</label>
         <input
+          id="password-input"
+          name="password"
           className="cyber-input"
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
+          aria-label="Contraseña"
         />
       </div>
+
       <button className="cyber-btn" type="submit">Iniciar sesión</button>
-      {error && <div className="cyber-error">{error}</div>}
+      {error && <div className="cyber-error" role="alert">{error}</div>}
     </form>
   );
 }
