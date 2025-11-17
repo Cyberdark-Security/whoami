@@ -8,26 +8,20 @@ import Writeups from "./Writeups";
 import Contacto from "./Contacto"; 
 import Ranking from "./Ranking";
 import Labs from "./Labs";
-import AdminPanel from './admin/panel';
-import AdminWriteups from "./AdminWriteups";
-import AdminLogin from "./AdminLogin";
+import AdminPanel from './admin/panel';  // ← Este es el correcto
+
 
 function isAdminLogged() {
-  const token = localStorage.getItem("token");
-  return !!token;
+  const user = JSON.parse(localStorage.getItem("user"));
+  return user && user.role === "admin";
 }
+
 
 function App() {
   const [user, setUser] = useState(() => {
     const almacenado = localStorage.getItem("user");
     return almacenado ? JSON.parse(almacenado) : null;
   });
-
-  const [forceUpdate, setForceUpdate] = useState(0);
-
-  function handleAdminLogin() {
-    setForceUpdate(forceUpdate + 1);
-  }
 
   return (
     <BrowserRouter>
@@ -40,18 +34,15 @@ function App() {
         <Route path="/labs" element={<Labs user={user} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/registro" element={<Registro setUser={setUser} />} />
-        <Route path="/admin/panel" element={<AdminPanel />} />
-        <Route
-          path="/admin/login"
-          element={<AdminLogin onLogin={handleAdminLogin} />}
-        />
+        
+        {/* ← PANEL DE ADMIN - PROTEGIDO */}
         <Route
           path="/admin/panel"
           element={
             isAdminLogged() ? (
-              <AdminWriteups />
+              <AdminPanel />
             ) : (
-              <Navigate to="/admin/login" replace />
+              <Navigate to="/" replace />
             )
           }
         />
@@ -59,6 +50,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
 
 export default App;
