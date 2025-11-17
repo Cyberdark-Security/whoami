@@ -161,11 +161,10 @@ export default function Labs({ user }) {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, lab: null });
 
-  // ✅ CORREGIDO: Solo title, difficulty, megalink
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
-    megalink: "", // ✅ CAMBIO: download_link → megalink
-    difficulty: "Fácil" // ✅ CAMBIO: lowercase → Capitalized
+    megalink: "",
+    difficulty: "Fácil"
   });
 
   const recargarLaboratorios = () => {
@@ -213,7 +212,14 @@ export default function Labs({ user }) {
     }
 
     try {
-      // ✅ CAMBIO: /api/admin/add-lab → /api/labs
+      // 📤 Mostrar estado en consola
+      console.log("📤 Enviando laboratorio:", {
+        title: nuevoLab.title.trim(),
+        difficulty: nuevoLab.difficulty,
+        megalink: nuevoLab.megalink.trim()
+      });
+
+      // ✅ POST A /api/labs
       const res = await fetch("/api/labs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -221,22 +227,32 @@ export default function Labs({ user }) {
           title: nuevoLab.title.trim(),
           difficulty: nuevoLab.difficulty,
           megalink: nuevoLab.megalink.trim()
-          // ❌ NO enviar: published_date (se genera automático)
         })
       });
       
+      // 📥 Procesar respuesta
+      const data = await res.json();
+      console.log("📥 Respuesta backend:", { 
+        status: res.status, 
+        ok: res.ok, 
+        data: data 
+      });
+      
       if (res.ok) {
-        // ✅ RESET: Solo los campos correctos
+        // ✅ ÉXITO: Reset y recarga
         setNuevoLab({ title: "", megalink: "", difficulty: "Fácil" });
         recargarLaboratorios();
         alert("✅ Laboratorio agregado exitosamente");
       } else {
-        const error = await res.json();
-        alert(`❌ Error: ${error.error}`);
+        // ❌ ERROR: Mostrar mensaje
+        const errorMsg = data.error || `Error ${res.status}`;
+        console.error("❌ Error del servidor:", errorMsg);
+        alert(`❌ Error: ${errorMsg}`);
       }
     } catch (err) {
-      console.error("Error:", err);
-      alert("❌ Error al agregar laboratorio");
+      // ❌ ERROR DE CONEXIÓN
+      console.error("❌ Error de conexión:", err);
+      alert(`❌ Error al conectar: ${err.message}`);
     }
   };
 
@@ -289,7 +305,6 @@ export default function Labs({ user }) {
             required
           />
           
-          {/* ✅ CAMBIO: Reemplazar published_date por megalink */}
           <input
             style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
             name="megalink"
@@ -379,7 +394,6 @@ export default function Labs({ user }) {
             </div>
 
             <div style={{ display: "flex", gap: "16px" }}>
-              {/* ✅ CAMBIO: download_link → megalink */}
               <a
                 href={l.megalink}
                 target="_blank"
