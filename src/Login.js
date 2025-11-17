@@ -9,12 +9,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // ✅ Si ya está autenticado, redirigir
+    // ✅ Si ya está autenticado, verificar su role y redirigir
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     
-    if (token && role === "admin") {
-      navigate("/admin");
+    if (token && role) {
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   }, [navigate]);
 
@@ -37,7 +41,7 @@ export default function Login() {
         return;
       }
 
-      // ✅ GUARDAR TOKEN Y ROLE EN LOCALSTORAGE
+      // ✅ GUARDAR TOKEN Y ROLE
       console.log("✅ Token recibido:", data.token);
       console.log("✅ Role recibido:", data.user.role);
 
@@ -45,13 +49,13 @@ export default function Login() {
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ REDIRIGIR AL PANEL DE ADMIN
+      // ✅ REDIRIGIR SEGÚN EL ROLE
       if (data.user.role === "admin") {
-        console.log("🎉 Admin detectado - Redirigiendo a /admin");
-        window.location.href = "/admin"; // Recarga completamente
+        console.log("🎉 Admin - Redirigiendo a /admin");
+        navigate("/admin", { replace: true });
       } else {
-        console.log("❌ No es admin - Redirigiendo a /");
-        window.location.href = "/";
+        console.log("👤 User normal - Redirigiendo a /");
+        navigate("/", { replace: true });
       }
     } catch (err) {
       console.error("❌ Error en login:", err);
@@ -79,7 +83,7 @@ export default function Login() {
         maxWidth: "400px"
       }}>
         <h1 style={{ color: "#39ff14", marginBottom: "30px", textAlign: "center" }}>
-          🔐 Admin Login
+          🔐 Login
         </h1>
 
         {error && (
@@ -89,7 +93,8 @@ export default function Login() {
             padding: "10px",
             borderRadius: "5px",
             marginBottom: "20px",
-            textAlign: "center"
+            textAlign: "center",
+            fontSize: "14px"
           }}>
             ❌ {error}
           </div>
@@ -103,6 +108,7 @@ export default function Login() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="admin@example.com"
             style={{
               width: "100%",
               padding: "10px",
@@ -110,7 +116,8 @@ export default function Login() {
               border: "1px solid #44FF44",
               color: "#44FF44",
               borderRadius: "5px",
-              fontFamily: "monospace"
+              fontFamily: "monospace",
+              boxSizing: "border-box"
             }}
             required
           />
@@ -124,6 +131,7 @@ export default function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
             style={{
               width: "100%",
               padding: "10px",
@@ -131,7 +139,8 @@ export default function Login() {
               border: "1px solid #44FF44",
               color: "#44FF44",
               borderRadius: "5px",
-              fontFamily: "monospace"
+              fontFamily: "monospace",
+              boxSizing: "border-box"
             }}
             required
           />
@@ -149,11 +158,21 @@ export default function Login() {
             borderRadius: "5px",
             fontWeight: "bold",
             cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.5 : 1
+            opacity: loading ? 0.5 : 1,
+            fontSize: "16px"
           }}
         >
           {loading ? "⏳ Entrando..." : "✓ Entrar"}
         </button>
+
+        <p style={{
+          textAlign: "center",
+          color: "#0CE0FF",
+          marginTop: "20px",
+          fontSize: "12px"
+        }}>
+          Admin y usuarios usan este login
+        </p>
       </form>
     </div>
   );
