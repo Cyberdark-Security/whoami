@@ -166,7 +166,7 @@ export default function Labs({ user }) {
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
     megalink: "",
-    difficulty: "fácil"
+    difficulty: "Fácil"
   });
 
   // ✅ CARGAR LABS - RETORNA { labs: [...] }
@@ -230,7 +230,7 @@ export default function Labs({ user }) {
     try {
       console.log("📤 Enviando laboratorio:", {
         title: nuevoLab.title.trim(),
-        difficulty: nuevoLab.difficulty.toLowerCase(),
+        difficulty: nuevoLab.difficulty,
         megalink: nuevoLab.megalink.trim()
       });
 
@@ -240,7 +240,7 @@ export default function Labs({ user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: nuevoLab.title.trim(),
-          difficulty: nuevoLab.difficulty.toLowerCase(),
+          difficulty: nuevoLab.difficulty,
           megalink: nuevoLab.megalink.trim()
         })
       });
@@ -333,10 +333,10 @@ export default function Labs({ user }) {
             onChange={handleNuevoLabChange}
             required
           >
-            <option value="fácil">🟢 Fácil</option>
-            <option value="medio">🟠 Medio</option>
-            <option value="difícil">🔴 Difícil</option>
-            <option value="insano">🟣 Insano</option>
+            <option value="Fácil">🟢 Fácil</option>
+            <option value="Medio">🟠 Medio</option>
+            <option value="Difícil">🔴 Difícil</option>
+            <option value="Insano">🟣 Insano</option>
           </select>
 
           <button
