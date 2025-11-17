@@ -6,7 +6,6 @@ export default function Writeups() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // ✅ SIN TOKEN - Endpoint público
     fetch("/api/writeups")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -25,57 +24,172 @@ export default function Writeups() {
       });
   }, []);
 
-  if (loading) return <div style={{ color: "#39ff14" }}>⏳ Cargando...</div>;
-  if (error) return <div style={{ color: "#ff3333" }}>❌ {error}</div>;
+  // ✅ Función helper para formatear fechas correctamente
+  const formatDate = (dateString) => {
+    if (!dateString) return "Sin fecha";
+    try {
+      // Reemplaza el espacio por T y el +00 por Z para formato ISO correcto
+      const isoDate = dateString.replace(" ", "T").replace("+00", "Z");
+      const date = new Date(isoDate);
+      if (isNaN(date.getTime())) {
+        return "Fecha inválida";
+      }
+      return date.toLocaleDateString("es-ES");
+    } catch (e) {
+      return "Error en fecha";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        color: "#39ff14", 
+        textAlign: "center", 
+        padding: "2em",
+        fontSize: "1.2em"
+      }}>
+        ⏳ Cargando writeups...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        color: "#ff3333", 
+        textAlign: "center", 
+        padding: "2em",
+        fontSize: "1.2em"
+      }}>
+        ❌ Error: {error}
+      </div>
+    );
+  }
 
   return (
     <main style={{
       maxWidth: 1200,
       margin: "3rem auto",
       background: "#18191b",
-      border: "1px solid #39ff14",
+      border: "2px solid #39ff14",
       borderRadius: "10px",
       padding: "2em"
     }}>
-      <h2 style={{ color: "#39ff14" }}>📝 Writeups Aprobados</h2>
+      <h2 style={{ 
+        color: "#39ff14",
+        marginTop: 0,
+        textAlign: "center"
+      }}>
+        📝 Writeups Aprobados
+      </h2>
 
       {writeups.length === 0 ? (
-        <div style={{ color: "#9aebc8", textAlign: "center", padding: "2em" }}>
+        <div style={{ 
+          color: "#9aebc8", 
+          textAlign: "center", 
+          padding: "2em",
+          fontSize: "1.1em"
+        }}>
           ✓ No hay writeups disponibles
         </div>
       ) : (
-        <table style={{
-          width: "100%",
-          color: "#fff",
-          borderCollapse: "collapse",
-          background: "#222"
-        }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid #39ff14" }}>
-              <th style={{ padding: "1em", textAlign: "left" }}>Máquina</th>
-              <th style={{ padding: "1em", textAlign: "left" }}>Usuario</th>
-              <th style={{ padding: "1em", textAlign: "left" }}>Evidencia</th>
-              <th style={{ padding: "1em", textAlign: "left" }}>Enviado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {writeups.map(w => (
-              <tr key={w.id} style={{ borderBottom: "1px solid #333" }}>
-                <td style={{ padding: "1em" }}>{w.lab_title || "Sin título"}</td>
-                <td style={{ padding: "1em" }}>{w.nombre} {w.apellido}</td>
-                <td style={{ padding: "1em" }}>
-                  <a href={w.evidence} target="_blank" rel="noopener noreferrer" style={{ color: "#39ff14" }}>
-                    Ver evidencia
-                  </a>
-                </td>
-                <td style={{ padding: "1em" }}>
-                  {new Date(w.submitted_at).toLocaleDateString()}
-                </td>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{
+            width: "100%",
+            color: "#fff",
+            borderCollapse: "collapse",
+            background: "#222"
+          }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #39ff14" }}>
+                <th style={{ 
+                  padding: "1em", 
+                  textAlign: "left",
+                  color: "#39ff14"
+                }}>
+                  Máquina
+                </th>
+                <th style={{ 
+                  padding: "1em", 
+                  textAlign: "left",
+                  color: "#39ff14"
+                }}>
+                  Usuario
+                </th>
+                <th style={{ 
+                  padding: "1em", 
+                  textAlign: "left",
+                  color: "#39ff14"
+                }}>
+                  Descripción
+                </th>
+                <th style={{ 
+                  padding: "1em", 
+                  textAlign: "left",
+                  color: "#39ff14"
+                }}>
+                  Enviado
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {writeups.map((w, index) => (
+                <tr 
+                  key={w.id} 
+                  style={{ 
+                    borderBottom: "1px solid #333",
+                    backgroundColor: index % 2 === 0 ? "#1a1a1c" : "#222"
+                  }}
+                >
+                  <td style={{ 
+                    padding: "1em",
+                    fontWeight: "bold",
+                    color: "#9aebc8"
+                  }}>
+                    {w.lab_title || "Sin título"}
+                  </td>
+                  <td style={{ padding: "1em" }}>
+                    {w.nombre} {w.apellido}
+                  </td>
+                  <td style={{ padding: "1em" }}>
+                    <a 
+                      href={w.evidence} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ 
+                        color: "#39ff14",
+                        textDecoration: "none",
+                        fontWeight: "bold"
+                      }}
+                      onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
+                      onMouseLeave={(e) => e.target.style.textDecoration = "none"}
+                    >
+                      Ver evidencia 🔗
+                    </a>
+                  </td>
+                  <td style={{ 
+                    padding: "1em",
+                    color: "#9aebc8"
+                  }}>
+                    {formatDate(w.submitted_at)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      <div style={{
+        marginTop: "2em",
+        padding: "1em",
+        background: "#1a1a1c",
+        borderLeft: "3px solid #39ff14",
+        color: "#9aebc8",
+        fontSize: "0.9em"
+      }}>
+        Total de writeups aprobados: <strong style={{ color: "#39ff14" }}>{writeups.length}</strong>
+      </div>
     </main>
   );
 }
