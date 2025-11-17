@@ -24,11 +24,10 @@ export default function Writeups() {
       });
   }, []);
 
-  // ✅ Función helper para formatear fechas correctamente
+  // ✅ Función helper para formatear fechas
   const formatDate = (dateString) => {
     if (!dateString) return "Sin fecha";
     try {
-      // Reemplaza el espacio por T y el +00 por Z para formato ISO correcto
       const isoDate = dateString.replace(" ", "T").replace("+00", "Z");
       const date = new Date(isoDate);
       if (isNaN(date.getTime())) {
@@ -37,6 +36,23 @@ export default function Writeups() {
       return date.toLocaleDateString("es-ES");
     } catch (e) {
       return "Error en fecha";
+    }
+  };
+
+  // ✅ Función para validar y abrir link
+  const handleEvidenceClick = (evidence, e) => {
+    e.preventDefault();
+    
+    if (!evidence || evidence.trim() === "") {
+      alert("⚠️ No hay evidencia disponible para este writeup");
+      return;
+    }
+
+    // Si es una URL válida, abre en nueva pestaña
+    if (evidence.startsWith("http://") || evidence.startsWith("https://")) {
+      window.open(evidence, "_blank", "noopener,noreferrer");
+    } else {
+      alert("❌ URL inválida: " + evidence);
     }
   };
 
@@ -133,48 +149,61 @@ export default function Writeups() {
               </tr>
             </thead>
             <tbody>
-              {writeups.map((w, index) => (
-                <tr 
-                  key={w.id} 
-                  style={{ 
-                    borderBottom: "1px solid #333",
-                    backgroundColor: index % 2 === 0 ? "#1a1a1c" : "#222"
-                  }}
-                >
-                  <td style={{ 
-                    padding: "1em",
-                    fontWeight: "bold",
-                    color: "#9aebc8"
-                  }}>
-                    {w.lab_title || "Sin título"}
-                  </td>
-                  <td style={{ padding: "1em" }}>
-                    {w.nombre} {w.apellido}
-                  </td>
-                  <td style={{ padding: "1em" }}>
-                    <a 
-                      href={w.evidence} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      style={{ 
-                        color: "#39ff14",
-                        textDecoration: "none",
-                        fontWeight: "bold"
-                      }}
-                      onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
-                      onMouseLeave={(e) => e.target.style.textDecoration = "none"}
-                    >
-                      Ver evidencia 🔗
-                    </a>
-                  </td>
-                  <td style={{ 
-                    padding: "1em",
-                    color: "#9aebc8"
-                  }}>
-                    {formatDate(w.submitted_at)}
-                  </td>
-                </tr>
-              ))}
+              {writeups.map((w, index) => {
+                const hasEvidence = w.evidence && w.evidence.trim() !== "";
+                
+                return (
+                  <tr 
+                    key={w.id} 
+                    style={{ 
+                      borderBottom: "1px solid #333",
+                      backgroundColor: index % 2 === 0 ? "#1a1a1c" : "#222"
+                    }}
+                  >
+                    <td style={{ 
+                      padding: "1em",
+                      fontWeight: "bold",
+                      color: "#9aebc8"
+                    }}>
+                      {w.lab_title || "Sin título"}
+                    </td>
+                    <td style={{ padding: "1em" }}>
+                      {w.nombre} {w.apellido}
+                    </td>
+                    <td style={{ padding: "1em" }}>
+                      {hasEvidence ? (
+                        <button
+                          onClick={(e) => handleEvidenceClick(w.evidence, e)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#39ff14",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            fontSize: "1em",
+                            padding: 0,
+                            textDecoration: "none"
+                          }}
+                          onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
+                          onMouseLeave={(e) => e.target.style.textDecoration = "none"}
+                        >
+                          Ver evidencia 🔗
+                        </button>
+                      ) : (
+                        <span style={{ color: "#999", fontSize: "0.9em" }}>
+                          Sin evidencia
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ 
+                      padding: "1em",
+                      color: "#9aebc8"
+                    }}>
+                      {formatDate(w.submitted_at)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
