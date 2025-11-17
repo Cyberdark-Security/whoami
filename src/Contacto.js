@@ -12,9 +12,9 @@ export default function Contacto() {
       </p>
       <p>
         <a  
-          href="mailto:ing.mauricio1983@gmail.com" 
+          href="mailto:hcamacho3_cua@asturias.edu.co" 
           style={{color: "#0ff", fontWeight:"bold"}}>
-          ing.mauricio1983@gmail.com
+          mailto:hcamacho3_cua@asturias.edu.co
         </a>
       </p>
       <p style={{fontSize:"0.95em", color:"#9aebc8"}}>
