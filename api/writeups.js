@@ -42,16 +42,18 @@ module.exports = async (req, res) => {
           w.id,
           w.lab_id,
           w.user_id,
-          w.submitted_at,
+          w.fecha_envio,
           u.nombre,
           u.apellido,
           l.title as lab_title,
-          w.descripcion
-         FROM writeups w
-         JOIN users u ON w.user_id = u.id
-         JOIN labs l ON w.lab_id = l.id
-         WHERE w.estado = 'aprobado'
-         ORDER BY w.submitted_at DESC`
+          w.texto,
+          w.writeup_url,
+          w.archivo_url
+        FROM writeups w
+        JOIN users u ON w.user_id = u.id
+        JOIN labs l ON w.lab_id = l.id
+        WHERE w.estado = 'aprobado'
+        ORDER BY w.fecha_envio DESC`
       );
 
       console.log('✅ Writeups públicos encontrados:', result.rows.length);
