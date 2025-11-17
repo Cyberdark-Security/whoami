@@ -12,63 +12,76 @@ export default function AdminPanel() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.role === "admin") {
       setAdmin(true);
-      fetchWriteups(user.id);
+      fetchWriteups();
     } else {
       navigate("/admin/login", { replace: true });
     }
     setLoading(false);
   }, [navigate]);
 
-  const fetchWriteups = async (userId) => {
+  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/writeups-pending
+  const fetchWriteups = async () => {
     try {
-      const response = await fetch("/api/writeups", {
-        headers: {
-          "x-user-id": userId,
-        },
-      });
+      console.log("🔄 Obteniendo writeups pendientes...");
+      const response = await fetch("/api/admin/writeups-pending");
 
       if (!response.ok) throw new Error("Error al obtener writeups");
 
       const data = await response.json();
+      console.log("✅ Writeups recibidos:", data);
       setWriteups(data.writeups || []);
     } catch (err) {
-      console.error("Error:", err);
+      console.error("❌ Error:", err);
       setError("No se pudieron cargar los writeups");
     }
   };
 
+  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/approve-writeup
   const handleApprove = async (writeupId) => {
     try {
-      const response = await fetch("/api/writeups", {
+      const response = await fetch("/api/admin/approve-writeup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ writeupId, aprobar: true }),
+        body: JSON.stringify({ 
+          user_lab_id: writeupId, 
+          status: "aprobado" 
+        }),
       });
 
       if (response.ok) {
         alert("✓ Writeup aprobado!");
-        const user = JSON.parse(localStorage.getItem("user"));
-        fetchWriteups(user.id);
+        fetchWriteups();
+      } else {
+        const err = await response.json();
+        alert(`Error: ${err.error}`);
       }
     } catch (err) {
+      console.error("❌ Error al aprobar:", err);
       alert("Error al aprobar");
     }
   };
 
+  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/approve-writeup
   const handleReject = async (writeupId) => {
     try {
-      const response = await fetch("/api/writeups", {
+      const response = await fetch("/api/admin/approve-writeup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ writeupId, aprobar: false }),
+        body: JSON.stringify({ 
+          user_lab_id: writeupId, 
+          status: "rechazado" 
+        }),
       });
 
       if (response.ok) {
         alert("✗ Writeup rechazado");
-        const user = JSON.parse(localStorage.getItem("user"));
-        fetchWriteups(user.id);
+        fetchWriteups();
+      } else {
+        const err = await response.json();
+        alert(`Error: ${err.error}`);
       }
     } catch (err) {
+      console.error("❌ Error al rechazar:", err);
       alert("Error al rechazar");
     }
   };
@@ -136,16 +149,20 @@ export default function AdminPanel() {
                   margin: "0 0 10px 0",
                   fontSize: "1.3em"
                 }}>
-                  {writeup.lab || "Lab sin nombre"}
+                  {writeup.lab_title || "Lab sin nombre"}
                 </h3>
 
                 <p style={{ margin: "8px 0", color: "#0CE0FF" }}>
-                  <strong>👤 Usuario:</strong> {writeup.nombre || "Desconocido"}
+                  <strong>👤 Usuario:</strong> {writeup.nombre || "Desconocido"} {writeup.apellido || ""}
+                </p>
+
+                <p style={{ margin: "8px 0", color: "#0CE0FF" }}>
+                  <strong>📧 Email:</strong> {writeup.email || "N/A"}
                 </p>
 
                 <p style={{ margin: "8px 0", color: "#0CE0FF" }}>
                   <strong>📅 Enviado:</strong>{" "}
-                  {new Date(writeup.fecha_envio).toLocaleDateString("es-ES", {
+                  {new Date(writeup.submitted_at).toLocaleDateString("es-ES", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -155,18 +172,22 @@ export default function AdminPanel() {
                 </p>
 
                 <p style={{ margin: "8px 0" }}>
-                  <a
-                    href={writeup.writeup_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: "#0CE0FF",
-                      textDecoration: "underline",
-                      fontSize: "1em"
-                    }}
-                  >
-                    🔗 Ver Writeup
-                  </a>
+                  {writeup.evidence && writeup.evidence.startsWith("http") ? (
+                    <a
+                      href={writeup.evidence}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#0CE0FF",
+                        textDecoration: "underline",
+                        fontSize: "1em"
+                      }}
+                    >
+                      🔗 Ver Evidencia
+                    </a>
+                  ) : (
+                    <span style={{ color: "#b8ffcb" }}>📝 {writeup.evidence}</span>
+                  )}
                 </p>
               </div>
 
