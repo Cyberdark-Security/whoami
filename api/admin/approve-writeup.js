@@ -2,14 +2,12 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-
-// 🔐 VERIFICACIÓN DE JWT (Igual que add-lab.js)
+// 🔐 VERIFICACIÓN DE JWT
 const verifyAdminToken = (token) => {
   try {
     if (!process.env.JWT_SECRET) {
@@ -31,7 +29,6 @@ const verifyAdminToken = (token) => {
   }
 };
 
-
 // 🎯 Sistema de puntos personalizado
 const POINTS_BY_DIFFICULTY = {
   'fácil': 1,
@@ -40,12 +37,10 @@ const POINTS_BY_DIFFICULTY = {
   'insano': 8
 };
 
-
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: "Método no permitido" });
   }
-
 
   try {
     // 🔐 PASO 1: VERIFICAR TOKEN
@@ -58,7 +53,6 @@ module.exports = async (req, res) => {
       });
     }
 
-
     // Verificar formato "Bearer token"
     if (!authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ 
@@ -67,10 +61,8 @@ module.exports = async (req, res) => {
       });
     }
 
-
     const token = authHeader.slice(7);
     const user = verifyAdminToken(token);
-
 
     if (!user) {
       console.warn('⚠️ Token inválido o usuario no es admin en approve-writeup');
@@ -80,27 +72,24 @@ module.exports = async (req, res) => {
       });
     }
 
-
     console.log(`✅ Admin verificado en approve-writeup: ${user.email}`);
 
-
     // 🔐 PASO 2: VALIDAR DATOS DE ENTRADA
-    const { user_lab_id, status } = req.body;
+    // ✅ ACEPTAR writeupId O user_lab_id
+    const { writeupId, user_lab_id, aprobar, status } = req.body;
+    
+    const id = writeupId || user_lab_id;
+    const isApproved = aprobar !== undefined ? aprobar : (status === 'aprobado');
 
-    console.log(`📝 [API] Procesando writeup: id=${user_lab_id}, status=${status}`);
+    console.log(`📝 [API] Procesando writeup: id=${id}, aprobar=${isApproved}`);
 
-    if (!user_lab_id || !status) {
+    if (!id) {
       return res.status(400).json({ 
-        error: "user_lab_id y status son requeridos" 
+        error: "writeupId o user_lab_id es requerido" 
       });
     }
 
-    if (!['aprobado', 'rechazado'].includes(status.toLowerCase())) {
-      return res.status(400).json({ 
-        error: "status debe ser 'aprobado' o 'rechazado'" 
-      });
-    }
-
+    const finalStatus = isApproved ? 'aprobado' : 'rechazado';
 
     // 🔐 PASO 3: ACTUALIZAR WRITEUP
     const updateWriteupQuery = `
@@ -110,7 +99,7 @@ module.exports = async (req, res) => {
       RETURNING user_id, lab_id;
     `;
 
-    const writeupResult = await pool.query(updateWriteupQuery, [status.toLowerCase(), user.id, user_lab_id]);
+    const writeupResult = await pool.query(updateWriteupQuery, [finalStatus, user.id, id]);
     
     if (writeupResult.rows.length === 0) {
       return res.status(404).json({ 
@@ -120,11 +109,10 @@ module.exports = async (req, res) => {
 
     const { user_id, lab_id } = writeupResult.rows[0];
 
-    console.log(`✅ Writeup ${user_lab_id} actualizado por admin ${user.email}`);
-
+    console.log(`✅ Writeup ${id} actualizado a ${finalStatus} por admin ${user.email}`);
 
     // 🔐 PASO 4: SI ESTÁ APROBADO, SUMAR PUNTOS SEGÚN DIFICULTAD
-    if (status.toLowerCase() === 'aprobado') {
+    if (isApproved) {
       // Obtener dificultad de la máquina
       const labQuery = `
         SELECT difficulty FROM labs WHERE id = $1
@@ -147,16 +135,15 @@ module.exports = async (req, res) => {
         console.log(`✅ Usuario ${user_id} ganó ${points} puntos (${difficulty}) - Verificado por ${user.email}`);
       }
     } else {
-      console.log(`❌ Writeup ${user_lab_id} rechazado por admin ${user.email}`);
+      console.log(`❌ Writeup ${id} rechazado por admin ${user.email}`);
     }
 
     return res.status(200).json({ 
       success: true,
-      message: `Writeup ${status} exitosamente`,
+      message: `Writeup ${finalStatus} exitosamente`,
       verified_by: user.email,
       verified_at: new Date().toISOString()
     });
-
 
   } catch (error) {
     console.error("❌ [API] Error:", error.message);
@@ -169,7 +156,6 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Error genérico (sin detalles por seguridad)
     return res.status(500).json({ 
       success: false,
       error: "Error procesando writeup"

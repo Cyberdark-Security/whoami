@@ -17,57 +17,84 @@ export default function AdminWriteups() {
     setError("");
     try {
       console.log("🔄 Obteniendo writeups pendientes...");
-      const res = await fetch("/api/admin/writeups-pending");
-      const data = await res.json();
       
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No estás autenticado como admin");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch("/api/admin/writeups-pending", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const data = await res.json();
       console.log("📊 Respuesta del servidor:", data);
 
-      if (data.writeups && Array.isArray(data.writeups)) {
-        setWriteups(data.writeups);
-        console.log(`✅ ${data.writeups.length} writeups encontrados`);
+      if (data.data && Array.isArray(data.data)) {
+        setWriteups(data.data);
+        console.log(`✅ ${data.data.length} writeups encontrados`);
+      } else if (Array.isArray(data)) {
+        setWriteups(data);
+        console.log(`✅ ${data.length} writeups encontrados`);
       } else {
-        console.warn("⚠️ No hay writeups en la respuesta");
+        console.warn("⚠️ Estructura de respuesta inesperada:", data);
         setWriteups([]);
       }
     } catch (err) {
       console.error("❌ Error fetching:", err);
-      setError("Error cargando writeups");
+      setError(`Error cargando writeups: ${err.message}`);
       setWriteups([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (user_lab_id, approvalStatus) => {
+  const handleApprove = async (writeupId, approvalStatus) => {
     if (!window.confirm(`¿Seguro que deseas ${approvalStatus} este writeup?`)) {
       return;
     }
 
     setApproving(true);
     try {
+      const token = localStorage.getItem("token");
+      
       const res = await fetch("/api/admin/approve-writeup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
-          user_lab_id,
-          status: approvalStatus
+          writeupId,
+          aprobar: approvalStatus === 'aprobado'
         })
       });
 
       if (res.ok) {
-        // Remover del estado local
-        setWriteups(writeups.filter(w => w.id !== user_lab_id));
+        const responseData = await res.json();
+        console.log("✅ Respuesta:", responseData);
+        
+        setWriteups(writeups.filter(w => w.id !== writeupId));
         setSelectedWriteup(null);
         alert(`✅ Writeup ${approvalStatus}`);
-        // Recargar lista
-        fetchPendingWriteups();
       } else {
-        const error = await res.json();
-        alert(`❌ Error: ${error.error}`);
+        const errorData = await res.json();
+        console.error("❌ Error del servidor:", errorData);
+        alert(`❌ Error: ${errorData.error || 'Error desconocido'}`);
       }
     } catch (err) {
-      console.error("Error:", err);
-      alert("❌ Error al procesar");
+      console.error("❌ Error:", err);
+      alert(`❌ Error al procesar: ${err.message}`);
     } finally {
       setApproving(false);
     }
@@ -81,7 +108,6 @@ export default function AdminWriteups() {
     <div className="admin-writeups">
       <h2>📋 Revisión de Writeups Pendientes</h2>
 
-      {/* MOSTR AR ERROR SI LO HAY */}
       {error && (
         <div style={{
           background: "rgba(255,0,0,0.1)",
@@ -101,7 +127,6 @@ export default function AdminWriteups() {
         </div>
       ) : (
         <div className="writeups-container">
-          {/* Lista de writeups */}
           <div className="writeups-list">
             {writeups.map(w => (
               <div
@@ -123,7 +148,6 @@ export default function AdminWriteups() {
             ))}
           </div>
 
-          {/* Detalle y acciones */}
           {selectedWriteup && (
             <div className="writeup-detail">
               <h3>📝 {selectedWriteup.lab_title}</h3>
