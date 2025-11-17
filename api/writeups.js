@@ -34,17 +34,37 @@ function verificarToken(req) {
 }
 
 module.exports = async (req, res) => {
-  // Verificar Token SIEMPRE
-  const tokenCheck = verificarToken(req);
-  if (tokenCheck.error) {
-    return res.status(tokenCheck.code).json({ 
-      error: tokenCheck.message 
-    });
-  }
-
   try {
-    if (req.method === "GET") {
-      // Obtener writeups PENDIENTES
+    // ✅ GET / - WRITEUPS PÚBLICOS (Sin token)
+    if (req.method === "GET" && req.url === "/api/writeups") {
+      const result = await pool.query(
+        `SELECT 
+          w.id,
+          w.lab_id,
+          w.user_id,
+          w.submitted_at,
+          u.nombre,
+          u.apellido,
+          l.title as lab_title,
+          w.descripcion
+         FROM writeups w
+         JOIN users u ON w.user_id = u.id
+         JOIN labs l ON w.lab_id = l.id
+         WHERE w.estado = 'aprobado'
+         ORDER BY w.submitted_at DESC`
+      );
+
+      console.log('✅ Writeups públicos encontrados:', result.rows.length);
+      return res.status(200).json(result.rows);
+    }
+
+    // ✅ GET /pending - WRITEUPS PENDIENTES (Requiere token de admin)
+    if (req.method === "GET" && req.url === "/api/writeups/pending") {
+      const tokenCheck = verificarToken(req);
+      if (tokenCheck.error) {
+        return res.status(tokenCheck.code).json({ error: tokenCheck.message });
+      }
+
       const result = await pool.query(
         `SELECT 
           w.id,
@@ -69,9 +89,15 @@ module.exports = async (req, res) => {
         success: true,
         data: result.rows 
       });
+    }
 
-    } else if (req.method === "POST") {
-      // Aprobar/Rechazar writeup
+    // ✅ POST /approve - APROBAR/RECHAZAR (Requiere token de admin)
+    if (req.method === "POST" && req.url === "/api/writeups/approve") {
+      const tokenCheck = verificarToken(req);
+      if (tokenCheck.error) {
+        return res.status(tokenCheck.code).json({ error: tokenCheck.message });
+      }
+
       const { writeupId, aprobar } = req.body;
 
       if (!writeupId) {
@@ -100,10 +126,9 @@ module.exports = async (req, res) => {
         success: true,
         message: `Writeup ${newStatus} exitosamente`
       });
-
-    } else {
-      return res.status(405).json({ error: "Método no permitido" });
     }
+
+    return res.status(405).json({ error: "Método no permitido" });
 
   } catch (err) {
     console.error('❌ Error en writeups:', err);
