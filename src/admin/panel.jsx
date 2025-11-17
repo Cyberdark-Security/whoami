@@ -9,23 +9,40 @@ export default function AdminPanel() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.role === "admin") {
+    // ✅ VALIDAR TOKEN EN LUGAR DE USER
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    console.log("🔐 Token:", token);
+    console.log("👤 Role:", role);
+
+    if (token && role === "admin") {
       setAdmin(true);
       fetchWriteups();
     } else {
+      console.log("❌ No autorizado - Redirigiendo a login");
       navigate("/admin/login", { replace: true });
     }
     setLoading(false);
   }, [navigate]);
 
-  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/writeups-pending
   const fetchWriteups = async () => {
     try {
       console.log("🔄 Obteniendo writeups pendientes...");
-      const response = await fetch("/api/admin/writeups-pending");
+      
+      // ✅ ENVIAR TOKEN EN HEADERS
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/admin/writeups-pending", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
 
-      if (!response.ok) throw new Error("Error al obtener writeups");
+      if (!response.ok) {
+        console.error("Error response:", response.status, response.statusText);
+        throw new Error("Error al obtener writeups");
+      }
 
       const data = await response.json();
       console.log("✅ Writeups recibidos:", data);
@@ -36,12 +53,15 @@ export default function AdminPanel() {
     }
   };
 
-  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/approve-writeup
   const handleApprove = async (writeupId) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/admin/approve-writeup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           user_lab_id: writeupId, 
           status: "aprobado" 
@@ -61,12 +81,15 @@ export default function AdminPanel() {
     }
   };
 
-  // ✅ CORREGIDO: Cambiar endpoint a /api/admin/approve-writeup
   const handleReject = async (writeupId) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/admin/approve-writeup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           user_lab_id: writeupId, 
           status: "rechazado" 
