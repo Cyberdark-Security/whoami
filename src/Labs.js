@@ -148,8 +148,10 @@ function ModalUpload({ open, onClose, onSubmit, lab, user }) {
 const getDifficultyStyle = (difficulty) => {
   const styles = {
     'fácil': { background: '#4CAF50', color: '#fff' },
+    'facil': { background: '#4CAF50', color: '#fff' },
     'medio': { background: '#FF9800', color: '#fff' },
     'difícil': { background: '#F44336', color: '#fff' },
+    'dificil': { background: '#F44336', color: '#fff' },
     'insano': { background: '#9C27B0', color: '#fff' }
   };
   return styles[difficulty?.toLowerCase()] || { background: '#999', color: '#fff' };
@@ -167,18 +169,28 @@ export default function Labs({ user }) {
     difficulty: "fácil"
   });
 
-  const recargarLaboratorios = () => {
+  // ✅ CARGAR LABS - FUNCIÓN CORREGIDA
+  const recargarLaboratorios = async () => {
     setLoading(true);
-    fetch("/api/labs")
-      .then(res => res.json())
-      .then(data => {
-        setLabs(data.labs || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error cargando labs:", err);
-        setLoading(false);
+    try {
+      const response = await fetch("/api/labs", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
       });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("✅ Labs cargados:", data);
+      setLabs(data.labs || []);
+    } catch (err) {
+      console.error("❌ Error cargando labs:", err);
+      setLabs([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -189,6 +201,7 @@ export default function Labs({ user }) {
     setNuevoLab({ ...nuevoLab, [e.target.name]: e.target.value });
   };
 
+  // ✅ CREAR NUEVO LAB - FUNCIÓN CORREGIDA
   const handleNuevoLabSubmit = async e => {
     e.preventDefault();
     
@@ -207,7 +220,7 @@ export default function Labs({ user }) {
     try {
       new URL(nuevoLab.megalink);
     } catch (err) {
-      alert("❌ Ingresa una URL válida");
+      alert("❌ Ingresa una URL válida (https://...)");
       return;
     }
 
@@ -215,7 +228,7 @@ export default function Labs({ user }) {
       // 📤 Mostrar estado en consola
       console.log("📤 Enviando laboratorio:", {
         title: nuevoLab.title.trim(),
-        difficulty: nuevoLab.difficulty,
+        difficulty: nuevoLab.difficulty.toLowerCase(),
         megalink: nuevoLab.megalink.trim()
       });
 
@@ -225,7 +238,7 @@ export default function Labs({ user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: nuevoLab.title.trim(),
-          difficulty: nuevoLab.difficulty,
+          difficulty: nuevoLab.difficulty.toLowerCase(), // ✅ Enviar en minúsculas
           megalink: nuevoLab.megalink.trim()
         })
       });
@@ -240,9 +253,9 @@ export default function Labs({ user }) {
       
       if (res.ok) {
         // ✅ ÉXITO: Reset y recarga
-        setNuevoLab({ title: "", megalink: "", difficulty: "Fácil" });
-        recargarLaboratorios();
+        setNuevoLab({ title: "", megalink: "", difficulty: "fácil" });
         alert("✅ Laboratorio agregado exitosamente");
+        recargarLaboratorios(); // ✅ RECARGAR LABS
       } else {
         // ❌ ERROR: Mostrar mensaje
         const errorMsg = data.error || `Error ${res.status}`;
