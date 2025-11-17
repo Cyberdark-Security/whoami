@@ -54,7 +54,7 @@ export default function Writeups() {
             <tr style={{ borderBottom: "2px solid #39ff14" }}>
               <th style={{ padding: "1em", textAlign: "left" }}>Máquina</th>
               <th style={{ padding: "1em", textAlign: "left" }}>Usuario</th>
-              <th style={{ padding: "1em", textAlign: "left" }}>Descripción</th>
+              <th style={{ padding: "1em", textAlign: "left" }}>Evidencia</th>
               <th style={{ padding: "1em", textAlign: "left" }}>Enviado</th>
             </tr>
           </thead>
@@ -63,9 +63,13 @@ export default function Writeups() {
               <tr key={w.id} style={{ borderBottom: "1px solid #333" }}>
                 <td style={{ padding: "1em" }}>{w.lab_title || "Sin título"}</td>
                 <td style={{ padding: "1em" }}>{w.nombre} {w.apellido}</td>
-                <td style={{ padding: "1em" }}>{w.texto || "Sin descripción"}</td>
                 <td style={{ padding: "1em" }}>
-                  {new Date(w.fecha_envio).toLocaleDateString()}
+                  <a href={w.evidence} target="_blank" rel="noopener noreferrer" style={{ color: "#39ff14" }}>
+                    Ver evidencia
+                  </a>
+                </td>
+                <td style={{ padding: "1em" }}>
+                  {new Date(w.submitted_at).toLocaleDateString()}
                 </td>
               </tr>
             ))}

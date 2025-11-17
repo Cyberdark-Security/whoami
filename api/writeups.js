@@ -39,21 +39,20 @@ module.exports = async (req, res) => {
     if (req.method === "GET" && req.url === "/api/writeups") {
       const result = await pool.query(
         `SELECT 
-          w.id,
-          w.lab_id,
-          w.user_id,
-          w.fecha_envio,
+          ul.id,
+          ul.lab_id,
+          ul.user_id,
+          ul.submitted_at,
           u.nombre,
           u.apellido,
           l.title as lab_title,
-          w.texto,
-          w.writeup_url,
-          w.archivo_url
-        FROM writeups w
-        JOIN users u ON w.user_id = u.id
-        JOIN labs l ON w.lab_id = l.id
-        WHERE w.estado = 'aprobado'
-        ORDER BY w.fecha_envio DESC`
+          ul.evidence as texto,
+          ul.evidence as writeup_url
+        FROM user_labs ul
+        JOIN users u ON ul.user_id = u.id
+        JOIN labs l ON ul.lab_id = l.id
+        WHERE ul.status = 'aprobado'
+        ORDER BY ul.submitted_at DESC`
       );
 
       console.log('✅ Writeups públicos encontrados:', result.rows.length);
