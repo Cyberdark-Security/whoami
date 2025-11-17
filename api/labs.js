@@ -1,96 +1,92 @@
 require('dotenv').config();
 const { Pool } = require("pg");
 
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
 });
 
-// ✅ Validar URL
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
 module.exports = async (req, res) => {
-  if (req.method === "GET") {
-    try {
-      // ✅ CORREGIDO: usar megalink (no download_link)
-      const result = await pool.query(
-        `SELECT id, title, created_at, megalink, difficulty 
-         FROM labs 
-         ORDER BY created_at DESC`
-      );
-      res.status(200).json({ labs: result.rows });
-    } catch (err) {
-      console.error("Error consultando laboratorios:", err);
-      res.status(500).json({ error: "Error consultando laboratorios" });
-    }
-  } 
-  else if (req.method === "POST") {
-    // ✅ SEGURIDAD: NO aceptar created_at del cliente
-    const { title, difficulty, megalink } = req.body;
-
-    // ✅ VALIDAR TODOS LOS CAMPOS
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: "El título es requerido" });
+  try {
+    // GET: Traer todos los labs
+    if (req.method === 'GET') {
+      const result = await pool.query('SELECT * FROM labs ORDER BY created_at DESC');
+      return res.status(200).json({ labs: result.rows });
     }
 
-    if (!difficulty) {
-      return res.status(400).json({ error: "La dificultad es requerida" });
-    }
+    // POST: Crear nuevo lab
+    if (req.method === 'POST') {
+      let { title, difficulty, megalink } = req.body;
 
-    const validDifficulties = ["Fácil", "Medio", "Difícil"];
-    if (!validDifficulties.includes(difficulty)) {
-      return res.status(400).json({ 
-        error: "Dificultad debe ser: Fácil, Medio o Difícil" 
-      });
-    }
+      // Normalizar datos
+      title = title?.trim();
+      megalink = megalink?.trim();
+      difficulty = difficulty?.toLowerCase();
 
-    if (!megalink || !megalink.trim()) {
-      return res.status(400).json({ error: "El megalink es requerido" });
-    }
-
-    // ✅ VALIDAR que sea una URL válida
-    if (!isValidUrl(megalink)) {
-      return res.status(400).json({ error: "El megalink debe ser una URL válida" });
-    }
-
-    // ✅ SANITIZAR input
-    const sanitizedTitle = title.trim().slice(0, 255); // Limitar longitud
-    const sanitizedMegalink = megalink.trim().slice(0, 500);
-
-    try {
-      // ✅ SEGURIDAD: created_at se genera automático en el servidor
-      const result = await pool.query(
-        `INSERT INTO labs (title, difficulty, megalink, created_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-         RETURNING id, title, difficulty, megalink, created_at`,
-        [sanitizedTitle, difficulty, sanitizedMegalink]
-      );
-
-      res.status(201).json({ 
-        success: true,
-        message: "✅ Laboratorio creado exitosamente",
-        lab: result.rows[0]
-      });
-
-    } catch (err) {
-      console.error("Error al agregar laboratorio:", err);
-      
-      // ❌ SEGURIDAD: No exponer detalles del error
-      if (err.code === "23505") { // Duplicate key
-        return res.status(409).json({ error: "Este laboratorio ya existe" });
+      // Validación título
+      if (!title) {
+        return res.status(400).json({ error: "El título es requerido" });
       }
-      
-      res.status(500).json({ error: "Error creando el laboratorio" });
+
+      // Validación megalink
+      if (!megalink) {
+        return res.status(400).json({ error: "El megalink es requerido" });
+      }
+
+      // Validar que sea URL válida
+      try {
+        new URL(megalink);
+      } catch (err) {
+        return res.status(400).json({ error: "El megalink debe ser una URL válida" });
+      }
+
+      // Map de dificultad: acepta minúsculas, convierte a formato de DB
+      const mapDifficulty = {
+        fácil: "Fácil",
+        medio: "Medio",
+        difícil: "Difícil",
+        insano: "Insano"
+      };
+
+      if (!mapDifficulty[difficulty]) {
+        return res.status(400).json({ 
+          error: "Dificultad debe ser: Fácil, Medio, Difícil o Insano" 
+        });
+      }
+
+      difficulty = mapDifficulty[difficulty];
+
+      // Insertar en BD
+      try {
+        const query = `
+          INSERT INTO labs (title, difficulty, megalink, created_at)
+          VALUES ($1, $2, $3, NOW())
+          RETURNING *
+        `;
+        const values = [title, difficulty, megalink];
+        const result = await pool.query(query, values);
+
+        return res.status(201).json({
+          message: "Laboratorio creado exitosamente",
+          lab: result.rows[0]
+        });
+      } catch (dbError) {
+        console.error("Error BD:", dbError.message);
+        return res.status(500).json({ 
+          error: "Error creando el laboratorio",
+          details: dbError.message 
+        });
+      }
     }
-  } 
-  else {
-    res.status(405).json({ error: "Método no permitido" });
+
+    // Método no permitido
+    return res.status(405).json({ error: "Método no permitido" });
+
+  } catch (err) {
+    console.error("Error general:", err);
+    return res.status(500).json({ error: "Error en el servidor" });
   }
 };
