@@ -1,3 +1,30 @@
+import './index.css';  // ← Debe estar en la línea 1 o 2
+import App from './App';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
 body, #root {
   background: #181A20;
   color: #F4F4F4;
