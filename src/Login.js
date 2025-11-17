@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Login({ setUser }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -9,10 +9,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // ✅ Si ya está autenticado, verificar su role y redirigir
+    // ✅ SI TIENE TOKEN Y ROLE, REDIRIGE AUTOMÁTICAMENTE
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     
+    // Evita bucle infinito - solo redirige si REALMENTE tiene ambos
     if (token && role) {
       if (role === "admin") {
         navigate("/admin", { replace: true });
@@ -20,7 +21,7 @@ export default function Login() {
         navigate("/", { replace: true });
       }
     }
-  }, [navigate]);
+  }, [navigate]); // ← Solo depende de navigate
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -38,29 +39,32 @@ export default function Login() {
 
       if (!response.ok) {
         setError(data.error || "Error en el login");
+        setLoading(false);
         return;
       }
 
       // ✅ GUARDAR TOKEN Y ROLE
-      console.log("✅ Token recibido:", data.token);
-      console.log("✅ Role recibido:", data.user.role);
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ REDIRIGIR SEGÚN EL ROLE
+      // ✅ ACTUALIZAR ESTADO EN APP
+      setUser(data.user);
+
+      console.log("✅ Login exitoso");
+      console.log("📋 Role:", data.user.role);
+
+      // ✅ REDIRIGIR SEGÚN ROLE
       if (data.user.role === "admin") {
-        console.log("🎉 Admin - Redirigiendo a /admin");
+        console.log("🔐 Redirigiendo a /admin");
         navigate("/admin", { replace: true });
       } else {
-        console.log("👤 User normal - Redirigiendo a /");
+        console.log("👤 Redirigiendo a /");
         navigate("/", { replace: true });
       }
     } catch (err) {
-      console.error("❌ Error en login:", err);
+      console.error("❌ Error:", err);
       setError("Error de conexión con el servidor");
-    } finally {
       setLoading(false);
     }
   };
@@ -93,8 +97,7 @@ export default function Login() {
             padding: "10px",
             borderRadius: "5px",
             marginBottom: "20px",
-            textAlign: "center",
-            fontSize: "14px"
+            textAlign: "center"
           }}>
             ❌ {error}
           </div>
@@ -164,15 +167,6 @@ export default function Login() {
         >
           {loading ? "⏳ Entrando..." : "✓ Entrar"}
         </button>
-
-        <p style={{
-          textAlign: "center",
-          color: "#0CE0FF",
-          marginTop: "20px",
-          fontSize: "12px"
-        }}>
-          Admin y usuarios usan este login
-        </p>
       </form>
     </div>
   );
