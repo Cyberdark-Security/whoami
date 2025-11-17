@@ -46,8 +46,7 @@ module.exports = async (req, res) => {
           u.nombre,
           u.apellido,
           l.title as lab_title,
-          ul.evidence as texto,
-          ul.evidence as writeup_url
+          ul.evidence
         FROM user_labs ul
         JOIN users u ON ul.user_id = u.id
         JOIN labs l ON ul.lab_id = l.id
