@@ -19,17 +19,16 @@ module.exports = async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, nombre, apellido, email, password_hash FROM users WHERE email=$1',
+      'SELECT id, nombre, apellido, email, password_hash, role FROM users WHERE email=$1',  // ← CAMBIO: Añadí role
       [email]
     );
 
-    // NUNCA reveles si el usuario existe o no, solo verifica
     if (result.rows.length === 0) {
-      // Simula el tiempo de hash para evitar ataques de tiempo
       await bcrypt.hash(password, 10);
       res.status(401).json({ error: "Usuario y/o contraseña incorrectos" });
       return;
     }
+    
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
 
@@ -38,14 +37,13 @@ module.exports = async (req, res) => {
       return;
     }
 
-   // Ejemplo respuesta tras login exitoso:
     res.status(200).json({
       user: {
         id: user.id,
         nombre: user.nombre,
         apellido: user.apellido,
         email: user.email,
-        role: user.role
+        role: user.role  // ✅ Ahora SÍ viene de la BD
       },
       flag: "login_ok"
     });
