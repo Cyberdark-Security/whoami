@@ -169,7 +169,7 @@ export default function Labs({ user }) {
     difficulty: "fácil"
   });
 
-  // ✅ CARGAR LABS - FUNCIÓN CORREGIDA
+  // ✅ CARGAR LABS - RETORNA { labs: [...] }
   const recargarLaboratorios = async () => {
     setLoading(true);
     try {
@@ -184,7 +184,10 @@ export default function Labs({ user }) {
 
       const data = await response.json();
       console.log("✅ Labs cargados:", data);
-      setLabs(data.labs || []);
+      
+      // ✅ MANEJO FLEXIBLE - funciona con ambos formatos
+      const labsList = Array.isArray(data) ? data : (data.labs || []);
+      setLabs(labsList);
     } catch (err) {
       console.error("❌ Error cargando labs:", err);
       setLabs([]);
@@ -201,7 +204,7 @@ export default function Labs({ user }) {
     setNuevoLab({ ...nuevoLab, [e.target.name]: e.target.value });
   };
 
-  // ✅ CREAR NUEVO LAB - FUNCIÓN CORREGIDA
+  // ✅ CREAR NUEVO LAB
   const handleNuevoLabSubmit = async e => {
     e.preventDefault();
     
@@ -225,7 +228,6 @@ export default function Labs({ user }) {
     }
 
     try {
-      // 📤 Mostrar estado en consola
       console.log("📤 Enviando laboratorio:", {
         title: nuevoLab.title.trim(),
         difficulty: nuevoLab.difficulty.toLowerCase(),
@@ -238,12 +240,11 @@ export default function Labs({ user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: nuevoLab.title.trim(),
-          difficulty: nuevoLab.difficulty.toLowerCase(), // ✅ Enviar en minúsculas
+          difficulty: nuevoLab.difficulty.toLowerCase(),
           megalink: nuevoLab.megalink.trim()
         })
       });
       
-      // 📥 Procesar respuesta
       const data = await res.json();
       console.log("📥 Respuesta backend:", { 
         status: res.status, 
@@ -252,18 +253,15 @@ export default function Labs({ user }) {
       });
       
       if (res.ok) {
-        // ✅ ÉXITO: Reset y recarga
         setNuevoLab({ title: "", megalink: "", difficulty: "fácil" });
         alert("✅ Laboratorio agregado exitosamente");
-        recargarLaboratorios(); // ✅ RECARGAR LABS
+        recargarLaboratorios();
       } else {
-        // ❌ ERROR: Mostrar mensaje
         const errorMsg = data.error || `Error ${res.status}`;
         console.error("❌ Error del servidor:", errorMsg);
         alert(`❌ Error: ${errorMsg}`);
       }
     } catch (err) {
-      // ❌ ERROR DE CONEXIÓN
       console.error("❌ Error de conexión:", err);
       alert(`❌ Error al conectar: ${err.message}`);
     }
@@ -382,7 +380,7 @@ export default function Labs({ user }) {
               }}>
                 {`Lab ${idx + 1}: ${l.title}`}
               </div>
-              {/* BADGE DE DIFICULTAD */}
+              
               {l.difficulty && (
                 <div style={{
                   ...getDifficultyStyle(l.difficulty),

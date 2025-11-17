@@ -1,11 +1,19 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 
-export default function ModalUpload({ open, onClose, onSubmit, lab }) {
-  const fileRef = useRef();
+export default function ModalUpload({ open, onClose, onSubmit, lab, user }) {
   const [writeupUrl, setWriteupUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+
+  // ✅ LIMPIAR CUANDO SE ABRE EL MODAL
+  React.useEffect(() => {
+    if (open) {
+      setWriteupUrl("");
+      setMensaje("");
+      setError("");
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -52,13 +60,15 @@ export default function ModalUpload({ open, onClose, onSubmit, lab }) {
       const data = await res.json();
 
       if (res.ok) {
+        const urlGuardada = writeupUrl; // ✅ GUARDAR URL ANTES DE LIMPIAR
         setWriteupUrl("");
         setMensaje("✅ ¡Writeup enviado correctamente!");
+        
         setTimeout(() => {
           setMensaje("");
           onClose();
           if (onSubmit) {
-            onSubmit({ labId: lab.id, writeup_url: writeupUrl });
+            onSubmit({ labId: lab.id, writeup_url: urlGuardada });
           }
         }, 1200);
       } else {
@@ -95,7 +105,7 @@ export default function ModalUpload({ open, onClose, onSubmit, lab }) {
         gap: "16px"
       }}>
         <div style={{ color: "#39ff14", fontWeight: "bold", fontSize: "1.15em", marginBottom: 2 }}>
-          Enviar evidencia para:<br /><span style={{ color: "#fff" }}>{lab.title}</span>
+          Enviar evidencia para:<br /><span style={{ color: "#fff" }}>{lab?.title || "Laboratorio"}</span>
         </div>
 
         <label style={{ color: "#fff" }}>
@@ -121,32 +131,40 @@ export default function ModalUpload({ open, onClose, onSubmit, lab }) {
         </label>
 
         <div style={{ display: "flex", gap: "1em", marginTop: 8 }}>
-          <button type="button" onClick={onClose} style={{
-            background: "#111a",
-            color: "#fff",
-            borderRadius: 5,
-            border: "none",
-            padding: "7px 14px",
-            cursor: "pointer"
-          }}>
+          <button 
+            type="button" 
+            onClick={onClose}
+            disabled={loading}
+            style={{
+              background: "#111a",
+              color: "#fff",
+              borderRadius: 5,
+              border: "none",
+              padding: "7px 14px",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.6 : 1
+            }}>
             Cancelar
           </button>
-          <button type="submit" disabled={loading} style={{
-            background: "#39ff14",
-            color: "#111",
-            border: "none",
-            fontWeight: "bold",
-            borderRadius: 6,
-            padding: "8px 18px",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.6 : 1
-          }}>
-            {loading ? "Enviando..." : "Enviar"}
+          <button 
+            type="submit" 
+            disabled={loading || !writeupUrl.trim()}
+            style={{
+              background: "#39ff14",
+              color: "#111",
+              border: "none",
+              fontWeight: "bold",
+              borderRadius: 6,
+              padding: "8px 18px",
+              cursor: loading || !writeupUrl.trim() ? "not-allowed" : "pointer",
+              opacity: loading || !writeupUrl.trim() ? 0.6 : 1
+            }}>
+            {loading ? "⏳ Enviando..." : "✅ Enviar"}
           </button>
         </div>
 
-        {error && <div style={{ color: "#ff6b6b" }}>{error}</div>}
-        {mensaje && <div style={{ color: "#39ff14" }}>{mensaje}</div>}
+        {error && <div style={{ color: "#ff6b6b", fontSize: 13 }}>{error}</div>}
+        {mensaje && <div style={{ color: "#39ff14", fontSize: 13 }}>{mensaje}</div>}
       </form>
     </div>
   );

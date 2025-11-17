@@ -1,14 +1,10 @@
 require('dotenv').config();
 const { Pool } = require("pg");
 
-// ✅ Pool configurado con SSL para Neon
+// ✅ CORRECTO: Usar DATABASE_URL en lugar de variables individuales
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: false } // ✅ CRUCIAL PARA NEON
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 module.exports = async (req, res) => {
