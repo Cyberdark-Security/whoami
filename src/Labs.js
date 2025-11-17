@@ -164,7 +164,7 @@ export default function Labs({ user }) {
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
     megalink: "",
-    difficulty: "Fácil"
+    difficulty: "fácil"
   });
 
   const recargarLaboratorios = () => {
@@ -322,9 +322,10 @@ export default function Labs({ user }) {
             onChange={handleNuevoLabChange}
             required
           >
-            <option value="Fácil">🟢 Fácil</option>
-            <option value="Medio">🟠 Medio</option>
-            <option value="Difícil">🔴 Difícil</option>
+            <option value="fácil">🟢 Fácil</option>
+            <option value="medio">🟠 Medio</option>
+            <option value="difícil">🔴 Difícil</option>
+            <option value="insano">🟣 Insano</option>
           </select>
 
           <button
