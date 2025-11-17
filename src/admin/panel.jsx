@@ -46,7 +46,9 @@ export default function AdminPanel() {
 
       const data = await response.json();
       console.log("✅ Writeups recibidos:", data);
-      setWriteups(data.writeups || []);
+      
+      // ✅ CORREGIDO: Usa data.data en lugar de data.writeups
+      setWriteups(data.data || []);
     } catch (err) {
       console.error("❌ Error:", err);
       setError("No se pudieron cargar los writeups");
@@ -63,8 +65,8 @@ export default function AdminPanel() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          user_lab_id: writeupId, 
-          status: "aprobado" 
+          writeupId: writeupId,
+          aprobar: true
         }),
       });
 
@@ -91,8 +93,8 @@ export default function AdminPanel() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          user_lab_id: writeupId, 
-          status: "rechazado" 
+          writeupId: writeupId,
+          aprobar: false
         }),
       });
 

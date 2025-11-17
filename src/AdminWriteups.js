@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../styles/AdminWriteups.css";
+import "./styles/AdminWriteups.css";
 
 export default function AdminWriteups() {
   const [writeups, setWriteups] = useState([]);
