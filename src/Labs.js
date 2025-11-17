@@ -161,11 +161,11 @@ export default function Labs({ user }) {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, lab: null });
 
+  // ✅ CORREGIDO: Solo title, difficulty, megalink
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
-    download_link: "",
-    published_date: "",
-    difficulty: "fácil"
+    megalink: "", // ✅ CAMBIO: download_link → megalink
+    difficulty: "Fácil" // ✅ CAMBIO: lowercase → Capitalized
   });
 
   const recargarLaboratorios = () => {
@@ -192,20 +192,42 @@ export default function Labs({ user }) {
 
   const handleNuevoLabSubmit = async e => {
     e.preventDefault();
+    
+    // ✅ VALIDACIONES
+    if (!nuevoLab.title.trim()) {
+      alert("❌ El título es requerido");
+      return;
+    }
+    
+    if (!nuevoLab.megalink.trim()) {
+      alert("❌ El megalink es requerido");
+      return;
+    }
+
+    // ✅ Validar URL
     try {
-      const res = await fetch("/api/admin/add-lab", {
+      new URL(nuevoLab.megalink);
+    } catch (err) {
+      alert("❌ Ingresa una URL válida");
+      return;
+    }
+
+    try {
+      // ✅ CAMBIO: /api/admin/add-lab → /api/labs
+      const res = await fetch("/api/labs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: nuevoLab.title,
-          published_date: nuevoLab.published_date,
-          download_link: nuevoLab.download_link,
-          difficulty: nuevoLab.difficulty
+          title: nuevoLab.title.trim(),
+          difficulty: nuevoLab.difficulty,
+          megalink: nuevoLab.megalink.trim()
+          // ❌ NO enviar: published_date (se genera automático)
         })
       });
       
       if (res.ok) {
-        setNuevoLab({ title: "", download_link: "", published_date: "", difficulty: "fácil" });
+        // ✅ RESET: Solo los campos correctos
+        setNuevoLab({ title: "", megalink: "", difficulty: "Fácil" });
         recargarLaboratorios();
         alert("✅ Laboratorio agregado exitosamente");
       } else {
@@ -267,23 +289,15 @@ export default function Labs({ user }) {
             required
           />
           
+          {/* ✅ CAMBIO: Reemplazar published_date por megalink */}
           <input
             style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
-            name="published_date"
-            placeholder="Fecha de publicación"
-            type="date"
-            value={nuevoLab.published_date}
+            name="megalink"
+            placeholder="Link/URL del laboratorio (https://...)"
+            value={nuevoLab.megalink}
             onChange={handleNuevoLabChange}
             required
-          />
-          
-          <input
-            style={{ margin: "6px 0", width: "94%", padding: 8, background: "#252A32", border: "1px solid #39ff14", borderRadius: 4, color: "#fff" }}
-            name="download_link"
-            placeholder="Link de descarga .zip/.rar/.ova"
-            value={nuevoLab.download_link}
-            onChange={handleNuevoLabChange}
-            required
+            type="url"
           />
 
           <select
@@ -293,10 +307,9 @@ export default function Labs({ user }) {
             onChange={handleNuevoLabChange}
             required
           >
-            <option value="fácil">🟢 Fácil</option>
-            <option value="medio">🟠 Medio</option>
-            <option value="difícil">🔴 Difícil</option>
-            <option value="insano">🟣 Insano</option>
+            <option value="Fácil">🟢 Fácil</option>
+            <option value="Medio">🟠 Medio</option>
+            <option value="Difícil">🔴 Difícil</option>
           </select>
 
           <button
@@ -366,8 +379,9 @@ export default function Labs({ user }) {
             </div>
 
             <div style={{ display: "flex", gap: "16px" }}>
+              {/* ✅ CAMBIO: download_link → megalink */}
               <a
-                href={l.download_link}
+                href={l.megalink}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

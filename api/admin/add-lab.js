@@ -7,41 +7,74 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+// ✅ Validar URL
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
   try {
-    const { title, published_date, download_link, difficulty } = req.body;
+    // ✅ CAMBIO: Ahora recibe título, dificultad y megalink (no published_date, no download_link)
+    const { title, difficulty, megalink } = req.body;
 
-    // Validar datos
-    if (!title || !published_date || !download_link || !difficulty) {
+    // ✅ Validar todos los campos
+    if (!title || !title.trim()) {
       return res.status(400).json({ 
-        error: "Todos los campos son requeridos" 
+        error: "El título es requerido" 
       });
     }
 
-    // Validar dificultad
-    const validDifficulties = ['fácil', 'medio', 'difícil', 'insano'];
-    if (!validDifficulties.includes(difficulty.toLowerCase())) {
+    if (!difficulty) {
       return res.status(400).json({ 
-        error: "Dificultad inválida. Valores válidos: fácil, medio, difícil, insano" 
+        error: "La dificultad es requerida" 
       });
     }
 
-    // Insertar en BD
+    if (!megalink || !megalink.trim()) {
+      return res.status(400).json({ 
+        error: "El megalink es requerido" 
+      });
+    }
+
+    // ✅ Validar dificultad (ahora con mayúscula)
+    const validDifficulties = ['Fácil', 'Medio', 'Difícil']; // ✅ Mayúscula
+    if (!validDifficulties.includes(difficulty)) {
+      return res.status(400).json({ 
+        error: "Dificultad inválida. Valores válidos: Fácil, Medio, Difícil" 
+      });
+    }
+
+    // ✅ Validar que sea URL válida
+    if (!isValidUrl(megalink)) {
+      return res.status(400).json({ 
+        error: "El megalink debe ser una URL válida (https://...)" 
+      });
+    }
+
+    // ✅ Sanitizar inputs
+    const sanitizedTitle = title.trim().slice(0, 255);
+    const sanitizedMegalink = megalink.trim().slice(0, 500);
+
+    // ✅ CAMBIO: Insert solo con título, dificultad, megalink, created_at
     const query = `
-      INSERT INTO labs (title, published_date, download_link, difficulty, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id, title, difficulty;
+      INSERT INTO labs (title, difficulty, megalink, created_at)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      RETURNING id, title, difficulty, megalink, created_at
     `;
 
     const result = await pool.query(query, [
-      title,
-      published_date,
-      download_link,
-      difficulty.toLowerCase()
+      sanitizedTitle,
+      difficulty,  // ✅ Mantiene mayúscula como llega
+      sanitizedMegalink
     ]);
 
     console.log(`✅ [API] Lab creado: ${result.rows[0].title} (${result.rows[0].difficulty})`);
@@ -54,10 +87,19 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error("❌ [API] Error:", error.message);
+    
+    // ✅ SEGURIDAD: No exponer detalles del error
+    if (error.code === "23505") {
+      return res.status(409).json({
+        success: false,
+        error: "Este laboratorio ya existe"
+      });
+    }
+
     return res.status(500).json({
       success: false,
-      error: "Error creando laboratorio",
-      detail: error.message
+      error: "Error creando laboratorio"
+      // ❌ NO incluir: detail: error.message (seguridad)
     });
   }
 };
