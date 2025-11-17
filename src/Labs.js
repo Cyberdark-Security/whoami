@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 
-// MODAL PARA SUBIR EVIDENCIA, igual que antes
-function ModalUpload({ open, onClose, onSubmit, lab }) {
+// MODAL PARA SUBIR WRITEUP
+function ModalUpload({ open, onClose, onSubmit, lab, user }) {
   const [writeupUrl, setWriteupUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
 
   React.useEffect(() => {
     if (open) {
       setWriteupUrl("");
       setMensaje("");
+      setError("");
     }
   }, [open]);
 
@@ -17,23 +19,82 @@ function ModalUpload({ open, onClose, onSubmit, lab }) {
 
   const handleSend = async e => {
     e.preventDefault();
-    setLoading(true);
+    setError("");
     setMensaje("");
-    await onSubmit({ labId: lab.id, writeup_url: writeupUrl });
-    setLoading(false);
-    setMensaje("¡Enviado correctamente!");
-    setTimeout(() => { setMensaje(""); onClose(); }, 1200);
+
+    // Validar URL
+    if (!writeupUrl.match(/^https?:\/\/.+/)) {
+      setError("❌ Ingresa una URL válida (https://...)");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Obtener user_id del localStorage
+      const userStr = localStorage.getItem("user");
+      const userObj = userStr ? JSON.parse(userStr) : null;
+
+      if (!userObj || !userObj.id) {
+        setError("❌ Error: Usuario no logueado");
+        setLoading(false);
+        return;
+      }
+
+      // Enviar al backend
+      const res = await fetch("/api/admin/submit-writeup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userObj.id,
+          lab_id: lab.id,
+          evidence: writeupUrl
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setWriteupUrl("");
+        setMensaje("✅ ¡Writeup enviado correctamente!");
+        setTimeout(() => {
+          setMensaje("");
+          onClose();
+          if (onSubmit) {
+            onSubmit({ labId: lab.id, writeup_url: writeupUrl });
+          }
+        }, 1200);
+      } else {
+        setError(`❌ ${data.error || "Error enviando writeup"}`);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setError("❌ Error de conexión al servidor");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"#000b",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}}>
+    <div style={{
+      position: "fixed", inset: 0, background: "#000b", display: "flex",
+      alignItems: "center", justifyContent: "center", zIndex: 2000
+    }}>
       <form onSubmit={handleSend} style={{
-        background: "#191b24", border: "2.5px solid #39ff14", borderRadius: 14, padding: "2em 2.5em", minWidth: 320
+        background: "#191b24", border: "2.5px solid #39ff14", borderRadius: 14,
+        padding: "2em 2.5em", minWidth: 320
       }}>
         <div style={{ color: "#39ff14", fontWeight: "bold", marginBottom: 8 }}>
           Publicar writeup para: <span style={{ color: "#fff" }}>{lab.title}</span>
         </div>
-        <label style={{color:"#fff",display:"block",marginBottom:10}}>
+
+        {/* Usuario info */}
+        <label style={{ color: "#fff", display: "block", marginBottom: 10, fontSize: 12 }}>
+          👤 Usuario: <strong>{user ? (user.username || user.nombre) : "Desconocido"}</strong>
+        </label>
+
+        {/* URL input */}
+        <label style={{ color: "#fff", display: "block", marginBottom: 10 }}>
           Link al writeup (Notion, GDrive, Blog, etc):
           <input
             type="url"
@@ -42,19 +103,50 @@ function ModalUpload({ open, onClose, onSubmit, lab }) {
             placeholder="https://..."
             onChange={e => setWriteupUrl(e.target.value)}
             style={{
-              display: "block", width: "100%", marginTop: 4,padding:"5px",borderRadius:5,border:"1px solid #222"
+              display: "block", width: "100%", marginTop: 4, padding: "5px",
+              borderRadius: 5, border: error ? "2px solid #ff0000" : "1px solid #222",
+              background: "#252A32", color: "#e0e0e0"
             }}
           />
         </label>
+
+        {/* Mensaje error */}
+        {error && (
+          <div style={{
+            marginBottom: 10, padding: 8, borderRadius: 4,
+            background: "rgba(255,0,0,0.1)", border: "1px solid #ff0000",
+            color: "#ff6666", fontSize: 12
+          }}>
+            {error}
+          </div>
+        )}
+
+        {/* Botones */}
         <div style={{ display: "flex", gap: "1em", marginTop: 14 }}>
-          <button type="button" onClick={onClose} style={{
-            background: "#111a", color: "#fff", borderRadius:5, border:"none", padding:"7px 14px"
-          }}>Cancelar</button>
-          <button type="submit" disabled={loading} style={{
-            background: "#39ff14", color: "#111", border: "none", fontWeight: "bold", borderRadius: 6, padding: "8px 18px"
-          }}>{loading ? "Enviando..." : "Enviar"}</button>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            style={{
+              background: "#111a", color: "#fff", borderRadius: 5, border: "none",
+              padding: "7px 14px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1
+            }}>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !writeupUrl.trim()}
+            style={{
+              background: "#39ff14", color: "#111", border: "none", fontWeight: "bold",
+              borderRadius: 6, padding: "8px 18px", cursor: loading || !writeupUrl.trim() ? "not-allowed" : "pointer",
+              opacity: loading || !writeupUrl.trim() ? 0.6 : 1
+            }}>
+            {loading ? "⏳ Enviando..." : "✅ Enviar"}
+          </button>
         </div>
-        {mensaje && <div style={{ color: "#39ff14", marginTop: 12 }}>{mensaje}</div>}
+
+        {/* Mensaje success */}
+        {mensaje && <div style={{ color: "#39ff14", marginTop: 12, fontSize: 13 }}>{mensaje}</div>}
       </form>
     </div>
   );
@@ -66,7 +158,7 @@ export default function Labs({ user }) {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, lab: null });
 
-  // NUEVO: Estado para formulario admin
+  // Estado para formulario admin
   const [nuevoLab, setNuevoLab] = useState({
     title: "",
     megalink: "",
@@ -88,7 +180,7 @@ export default function Labs({ user }) {
     recargarLaboratorios();
   }, []);
 
-  // NUEVO: Manejadores del form admin
+  // Manejadores del form admin
   const handleNuevoLabChange = e => {
     setNuevoLab({ ...nuevoLab, [e.target.name]: e.target.value });
   };
@@ -108,13 +200,12 @@ export default function Labs({ user }) {
     recargarLaboratorios();
   };
 
+  // Manejador de evidencia (ahora solo recarga si es necesario)
   const enviarEvidencia = async ({ labId, writeup_url }) => {
-    await fetch("/api/evidencias", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ labId, writeup_url })
-    });
-    recargarLaboratorios();
+    console.log(`✅ Writeup enviado para lab ${labId}`);
+    // La BD ya está actualizada desde el modal
+    // Puedes recargar labs si lo necesitas
+    // recargarLaboratorios();
   };
 
   if (loading) return <div style={{ color: "#39ff14" }}>Cargando laboratorios...</div>;
@@ -153,7 +244,7 @@ export default function Labs({ user }) {
         }}>
           <h2 style={{ color: "#39ff14" }}>Agregar laboratorio nuevo</h2>
           <input
-            style={{margin:"6px 0", width:"94%", padding:8}}
+            style={{ margin: "6px 0", width: "94%", padding: 8 }}
             name="title"
             placeholder="Título o nombre"
             value={nuevoLab.title}
@@ -161,7 +252,7 @@ export default function Labs({ user }) {
             required
           />
           <input
-            style={{margin:"6px 0", width:"94%", padding:8}}
+            style={{ margin: "6px 0", width: "94%", padding: 8 }}
             name="fecha"
             placeholder="Fecha (YYYY-MM-DD)"
             type="date"
@@ -170,7 +261,7 @@ export default function Labs({ user }) {
             required
           />
           <input
-            style={{margin:"6px 0", width:"94%", padding:8}}
+            style={{ margin: "6px 0", width: "94%", padding: 8 }}
             name="megalink"
             placeholder="Link de descarga .zip/.rar/.ova"
             value={nuevoLab.megalink}
@@ -271,6 +362,7 @@ export default function Labs({ user }) {
       <ModalUpload
         open={modal.open}
         lab={modal.lab || {}}
+        user={user}
         onClose={() => setModal({ open: false, lab: null })}
         onSubmit={enviarEvidencia}
       />
