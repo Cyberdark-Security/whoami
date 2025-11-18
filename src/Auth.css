@@ -1,0 +1,289 @@
+/* ============================================
+   AUTENTICACIÓN - ESTILO CYBER/MINIMALISTA
+   ============================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap");
+
+:root {
+  --bg-primary: #0a0e27;
+  --bg-secondary: #0f1335;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --accent-green: #00ff41;
+  --accent-cyan: #00d4ff;
+  --border-color: #1a1f3a;
+  --error-color: #ff3860;
+  --success-color: #00ff41;
+}
+
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  font-family: "Fira Mono", monospace;
+  padding: 20px;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 450px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 0 40px rgba(0, 255, 65, 0.1);
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TÍTULO */
+.auth-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent-green);
+  margin: 0 0 30px 0;
+  text-transform: lowercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* FORMULARIO */
+.auth-form {
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: "Fira Mono", monospace;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  background: rgba(0, 212, 255, 0.02);
+}
+
+.form-group input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* INDICADORES DE CONTRASEÑA */
+.password-requirements {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.password-requirements p {
+  margin: 6px 0;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+}
+
+.password-requirements p.valid {
+  color: var(--success-color);
+}
+
+.password-requirements p.invalid {
+  color: var(--error-color);
+}
+
+/* INDICADOR DE CONTRASEÑA COINCIDIDA */
+.form-group > p {
+  margin-top: 8px;
+  font-size: 11px;
+  text-transform: lowercase;
+}
+
+.form-group > p.valid {
+  color: var(--success-color);
+}
+
+.form-group > p.invalid {
+  color: var(--error-color);
+}
+
+/* BOTÓN PRINCIPAL */
+.auth-button {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-green);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-family: "Fira Mono", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.auth-button:hover:not(:disabled) {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.auth-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* MENSAJES DE ERROR Y ÉXITO */
+.auth-error {
+  background: rgba(255, 56, 96, 0.1);
+  border: 1px solid rgba(255, 56, 96, 0.4);
+  color: var(--error-color);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  text-transform: lowercase;
+  animation: shake 0.3s ease;
+}
+
+.auth-success {
+  background: rgba(0, 255, 65, 0.1);
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  color: var(--success-color);
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  text-transform: lowercase;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* INFORMACIÓN DE PASOS */
+.step-info {
+  color: var(--accent-cyan);
+  font-size: 11px;
+  margin-bottom: 15px;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+}
+
+.step-description {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 15px;
+  text-transform: lowercase;
+}
+
+.step-description strong {
+  color: var(--accent-green);
+}
+
+/* LINKS Y BOTONES SECUNDARIOS */
+.auth-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.auth-links span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: lowercase;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  font-family: "Fira Mono", monospace;
+  font-size: 12px;
+  text-decoration: none;
+  text-transform: lowercase;
+  transition: all 0.3s ease;
+  padding: 0;
+  letter-spacing: 0.5px;
+}
+
+.link-button:hover {
+  color: var(--accent-green);
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.link-separator {
+  color: var(--border-color);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .auth-box {
+    padding: 30px 20px;
+  }
+
+  .auth-title {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .auth-button {
+    font-size: 13px;
+  }
+}

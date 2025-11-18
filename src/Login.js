@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import "./Auth.css";
 
 export default function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotStep, setForgotStep] = useState(1); // 1=email, 2=code, 3=newpass
+  const [forgotCode, setForgotCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  // ✅ SI YA TIENE TOKEN, REDIRIGE
+  // ✅ Si ya tiene token, redirige
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -21,6 +29,7 @@ export default function Login({ setUser }) {
     }
   }, [navigate]);
 
+  // ✅ FUNCIÓN: LOGIN NORMAL
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -36,28 +45,24 @@ export default function Login({ setUser }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Error en el login");
+        setError(data.error || "Email o contraseña incorrectos");
         setLoading(false);
         return;
       }
 
-      // ✅ GUARDAR EN LOCALSTORAGE
+      // ✅ Guardar en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ ACTUALIZAR ESTADO
+      // ✅ Actualizar estado
       setUser(data.user);
-
       console.log("✅ Login exitoso");
-      console.log("👤 User role:", data.user.role);
 
-      // ✅ REDIRIGIR SEGÚN ROLE
+      // ✅ Redirigir según role
       if (data.user.role === "admin") {
-        console.log("🔐 Redirecting to /admin/panel");
         navigate("/admin/panel", { replace: true });
       } else {
-        console.log("👤 Redirecting to /");
         navigate("/", { replace: true });
       }
     } catch (err) {
@@ -67,130 +72,281 @@ export default function Login({ setUser }) {
     }
   };
 
+  // ✅ FUNCIÓN: SOLICITAR RECUPERACIÓN (PASO 1)
+  const handleForgotStep1 = async (e) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+
+    try {
+      const res = await fetch("/api/forgot-password/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Email no encontrado");
+        setForgotLoading(false);
+        return;
+      }
+
+      // Pasar al paso 2
+      setForgotStep(2);
+      setForgotLoading(false);
+    } catch (err) {
+      setError("Error al enviar solicitud");
+      setForgotLoading(false);
+    }
+  };
+
+  // ✅ FUNCIÓN: VERIFICAR CÓDIGO (PASO 2)
+  const handleForgotStep2 = async (e) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+
+    try {
+      const res = await fetch("/api/forgot-password/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail, code: forgotCode }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Código incorrecto");
+        setForgotLoading(false);
+        return;
+      }
+
+      // Pasar al paso 3
+      setForgotStep(3);
+      setForgotLoading(false);
+    } catch (err) {
+      setError("Error al verificar código");
+      setForgotLoading(false);
+    }
+  };
+
+  // ✅ FUNCIÓN: CAMBIAR CONTRASEÑA (PASO 3)
+  const handleForgotStep3 = async (e) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+
+    if (newPassword.length < 8) {
+      setError("La contraseña debe tener mínimo 8 caracteres");
+      setForgotLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/forgot-password/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: forgotEmail, 
+          code: forgotCode,
+          newPassword 
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Error al cambiar contraseña");
+        setForgotLoading(false);
+        return;
+      }
+
+      // ✅ Éxito - volver a login normal
+      alert("✅ Contraseña cambiad exitosamente. Inicia sesión con tu nueva contraseña.");
+      setShowForgot(false);
+      setForgotStep(1);
+      setForgotEmail("");
+      setForgotCode("");
+      setNewPassword("");
+      setForgotLoading(false);
+    } catch (err) {
+      setError("Error al cambiar contraseña");
+      setForgotLoading(false);
+    }
+  };
+
+  // ✅ FUNCIÓN: VOLVER ATRÁS EN RECUPERACIÓN
+  const handleBackToLogin = () => {
+    setShowForgot(false);
+    setForgotStep(1);
+    setForgotEmail("");
+    setForgotCode("");
+    setNewPassword("");
+    setError("");
+  };
+
+  // ============================================
+  // 🎨 RENDER
+  // ============================================
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "#191b1f",
-        fontFamily: "monospace",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: "#23272F",
-          padding: "40px",
-          borderRadius: "10px",
-          border: "2px solid #44FF44",
-          width: "100%",
-          maxWidth: "400px",
-        }}
-      >
-        <h1
-          style={{
-            color: "#39ff14",
-            marginBottom: "30px",
-            textAlign: "center",
-          }}
-        >
-          🔐 Login
-        </h1>
+    <div className="auth-container">
+      {/* ========== FORMULARIO LOGIN NORMAL ========== */}
+      {!showForgot ? (
+        <div className="auth-box">
+          <h1 className="auth-title">iniciar sesión</h1>
 
-        {error && (
-          <div
-            style={{
-              background: "#FF4444",
-              color: "#fff",
-              padding: "10px",
-              borderRadius: "5px",
-              marginBottom: "20px",
-              textAlign: "center",
-            }}
-          >
-            ❌ {error}
+          {error && <div className="auth-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="email">email:</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">contraseña:</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="auth-button" disabled={loading}>
+              {loading ? "cargando..." : "iniciar sesión"}
+            </button>
+          </form>
+
+          {/* Links */}
+          <div className="auth-links">
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setShowForgot(true)}
+            >
+              ¿olvidaste tu contraseña?
+            </button>
+            <span className="link-separator">•</span>
+            <Link to="/registro" className="link-button">
+              crear cuenta
+            </Link>
           </div>
-        )}
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              color: "#0CE0FF",
-              display: "block",
-              marginBottom: "5px",
-            }}
-          >
-            📧 Email:
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@example.com"
-            style={{
-              width: "100%",
-              padding: "10px",
-              background: "#1a1d24",
-              border: "1px solid #44FF44",
-              color: "#44FF44",
-              borderRadius: "5px",
-              fontFamily: "monospace",
-              boxSizing: "border-box",
-            }}
-            required
-          />
         </div>
+      ) : (
+        /* ========== FORMULARIO RECUPERAR CONTRASEÑA ========== */
+        <div className="auth-box">
+          <h1 className="auth-title">recuperar contraseña</h1>
 
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              color: "#0CE0FF",
-              display: "block",
-              marginBottom: "5px",
-            }}
-          >
-            🔑 Password:
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            style={{
-              width: "100%",
-              padding: "10px",
-              background: "#1a1d24",
-              border: "1px solid #44FF44",
-              color: "#44FF44",
-              borderRadius: "5px",
-              fontFamily: "monospace",
-              boxSizing: "border-box",
-            }}
-            required
-          />
+          {error && <div className="auth-error">{error}</div>}
+
+          {/* PASO 1: SOLICITAR */}
+          {forgotStep === 1 && (
+            <form onSubmit={handleForgotStep1} className="auth-form">
+              <p className="step-info">paso 1/3: verifica tu email</p>
+              <div className="form-group">
+                <label htmlFor="forgot-email">email:</label>
+                <input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="auth-button"
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? "enviando..." : "enviar código"}
+              </button>
+            </form>
+          )}
+
+          {/* PASO 2: VERIFICAR CÓDIGO */}
+          {forgotStep === 2 && (
+            <form onSubmit={handleForgotStep2} className="auth-form">
+              <p className="step-info">paso 2/3: ingresa el código</p>
+              <p className="step-description">
+                hemos enviado un código a <strong>{forgotEmail}</strong>
+              </p>
+              <div className="form-group">
+                <label htmlFor="forgot-code">código (6 dígitos):</label>
+                <input
+                  id="forgot-code"
+                  type="text"
+                  placeholder="000000"
+                  value={forgotCode}
+                  onChange={(e) => setForgotCode(e.target.value.slice(0, 6))}
+                  maxLength="6"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="auth-button"
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? "verificando..." : "verificar código"}
+              </button>
+            </form>
+          )}
+
+          {/* PASO 3: NUEVA CONTRASEÑA */}
+          {forgotStep === 3 && (
+            <form onSubmit={handleForgotStep3} className="auth-form">
+              <p className="step-info">paso 3/3: define nueva contraseña</p>
+              <div className="form-group">
+                <label htmlFor="new-password">nueva contraseña:</label>
+                <input
+                  id="new-password"
+                  type="password"
+                  placeholder="mínimo 8 caracteres"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <p className="password-hint">
+                ✓ mínimo 8 caracteres
+                {newPassword.length >= 8 && " ✓"}
+              </p>
+              <button
+                type="submit"
+                className="auth-button"
+                disabled={forgotLoading || newPassword.length < 8}
+              >
+                {forgotLoading ? "guardando..." : "cambiar contraseña"}
+              </button>
+            </form>
+          )}
+
+          {/* BOTÓN: VOLVER */}
+          <div className="auth-links">
+            <button
+              type="button"
+              className="link-button"
+              onClick={handleBackToLogin}
+            >
+              ← volver a login
+            </button>
+          </div>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "#44FF44",
-            color: "#191b1f",
-            border: "none",
-            borderRadius: "5px",
-            fontWeight: "bold",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.5 : 1,
-            fontSize: "16px",
-          }}
-        >
-          {loading ? "⏳ Entrando..." : "✓ Entrar"}
-        </button>
-      </form>
+      )}
     </div>
   );
 }
