@@ -14,7 +14,7 @@ export default function Contacto() {
         <a  
           href="mailto:hcamacho3_cua@asturias.edu.co" 
           style={{color: "#0ff", fontWeight:"bold"}}>
-          mailto:hcamacho3_cua@asturias.edu.co
+          hcamacho3_cua@asturias.edu.co
         </a>
       </p>
       <p style={{fontSize:"0.95em", color:"#9aebc8"}}>
